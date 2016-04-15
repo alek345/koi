@@ -1,0 +1,19 @@
+# Comments are simply ignored by the compiler/interpreter
+# Boolean values in if statement 0 = false, non-0 = true
+
+function __hello:
+	var a = 3.1415 + 5 * 4;
+	var some_string = "Hello, world!";
+
+	if a > 20 then
+		return a + 1;
+	endif
+
+	return a;
+endfunction
+
+function main:
+	__hello: ;
+
+	return 0;
+endfunction

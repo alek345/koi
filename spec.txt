@@ -1,0 +1,8 @@
+Comments start with '#' and run until the end of the line
+
+Boolean experssions evaluates to either 0 or 1. 
+0 means false and any non-0 value means true
+
+example:
+	1 < 2 would produce 1
+	2 < 1 would produce 0
