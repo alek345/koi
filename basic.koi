@@ -5,12 +5,10 @@ var b = 5*4+3.1415;
 
 noargs: ;
 onearg: 1234;
-hello: "Test!", 360, 240, some_var;
+hello: "Test!", 360*32, 240, some_var;
 
 function main x, y, z:
 	var local = x + y * z;
-	
-	
 	
 	return local * local;
 endfunction

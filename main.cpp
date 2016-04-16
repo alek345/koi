@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "bytecode.h"
 
 void print_indents(int length) {
     for(int i = 0; i < length; i++) {
@@ -122,6 +123,11 @@ void print_node(Node *n) {
     }
 }
     
+void print_bits(uint32_t v) {
+    for(int i = 31; i >= 0; i--) {
+        putchar('0' + ((v >> i) & 1));
+    }
+}
 
 int main(int argc, char **argv) {
     if(argc != 2) {
@@ -139,6 +145,31 @@ int main(int argc, char **argv) {
         print_node(n);
         n = n->next;
     }
+    
+    printf("\n\nBytecode:\n\n");
+    
+    conversion a, b; 
+    a.floatVal = 3.1415f;
+    b.floatVal = 2.5f;
+    
+    uint32_t test[] = {
+        OP_CONST, a.intVal,
+        OP_CONST, 5,
+        OP_FIADD,
+        OP_POP,
+        OP_CONST, 5,
+        OP_CONST, b.intVal,
+        OP_IFADD,
+        OP_POP,
+        OP_CONST, 4,
+        OP_CONST, 3,
+        OP_IIADD,
+        OP_HALT,
+    };
+    
+    VirtualMachine vm(test, sizeof(test)/sizeof(test[0]), 0);
+    int32_t ret = vm.Run(true);
+    printf("\nvm ret: %d\n", ret);
     
     return 0;
 }

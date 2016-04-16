@@ -6,3 +6,13 @@ Boolean experssions evaluates to either 0 or 1.
 example:
 	1 < 2 would produce 1
 	2 < 1 would produce 0
+
+A variable will have the type/value of 'undefined' by default
+
+VirtualMachine:
+
+32bit code, data and stack memory
+Stack based
+
+based on: 
+	https://www.youtube.com/watch?v=OjaAToVkoTw
