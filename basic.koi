@@ -1,16 +1,12 @@
-var a;
-a = "Hello, world!";
+#noargs: ;
+#onearg: 1234;
+#hello: "Test!", 360*32, 240, some_var;
 
-var b = 5*4+3.1415;
+var test: Integer;
+test = 4*2;
 
-noargs: ;
-onearg: 1234;
-hello: "Test!", 360*32, 240, some_var;
-
-function main x, y, z:
-	var local = x + y * z;
-	
-	return local * local;
+function add Integer a, Integer b:
+	return a + b;
 endfunction
 
-return 5+3*2;
+return 5 + 3;

@@ -13,7 +13,7 @@ enum NodeType {
     NODE_UNARY,
     NODE_FUNCDEF,
     NODE_IF,
-    //NODE_STRUCTDEF,
+    // TODO: NODE_STRUCTDEF,
 };
 
 enum LiteralType {
@@ -70,6 +70,7 @@ struct Node {
         } funccall;
         struct {
             char *name;
+            char *type;
         } vardecl;
         struct {
             char *name;
@@ -77,6 +78,7 @@ struct Node {
         } assignment;
         struct {
             char *name;
+            char *type;
             Node *expr;
         } vardeclassign;
         struct {
@@ -95,6 +97,7 @@ struct Node {
             char *name;
             int num_arguments;
             char **arguments;
+            char **argument_types;
             Node *stmts;
         } funcdef;
         struct {

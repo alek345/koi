@@ -2,6 +2,7 @@
 #define BYTECODE_H
 #include <stdint.h>
 #include "ast.h"
+#include "context.h"
 
 enum Operand {
     OP_HALT = 0,
@@ -41,29 +42,11 @@ union conversion {
 
 char *op_to_string(Operand op);
 
-struct VirtualMachine {
+struct BytecodeBuilder {
     uint32_t *code;
-    uint32_t *data;
-    uint32_t *stack;
-    uint32_t ip;
-    int32_t sp;
-    int32_t fp;
-    bool halt;
-    
     uint32_t code_size;
     uint32_t data_size;
-    
-    VirtualMachine(uint32_t *code, uint32_t code_size, uint32_t data_size);
-    
-    // Retuns the value at the top of the stack at the end
-    // of execution
-    int32_t Run(bool trace);
-};
-
-
-struct BytecodeBuilder {
-    uint32_t *data;
-    uint32_t data_size;
+    uint32_t start_ip;
     
     // Let the bytecode builder control how much data
     // memory to allocate. Check every GSTORE or GLOAD and find the
@@ -79,7 +62,31 @@ struct BytecodeBuilder {
     
     void Add(uint32_t val);
     
-    void Generate(Node *ast);
+    void GenerateExpr(Node *ast);
+    
+    void Generate(Context *context, Node *node);
+    void Generate(Context *context);
+    void GenerateFunction(Function *function);
+};
+
+struct VirtualMachine {
+    uint32_t *code;
+    uint32_t *data;
+    uint32_t *stack;
+    uint32_t ip;
+    int32_t sp;
+    int32_t fp;
+    bool halt;
+    
+    uint32_t code_size;
+    uint32_t data_size;
+    
+    VirtualMachine(uint32_t *code, uint32_t code_size, uint32_t data_size);
+    VirtualMachine(BytecodeBuilder *builder);
+    
+    // Retuns the value at the top of the stack at the end
+    // of execution
+    int32_t Run(bool trace);
 };
 
 #endif /* BYTECODE_H */

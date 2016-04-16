@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "parser.h"
 #include "bytecode.h"
+#include "context.h"
 
 void print_indents(int length) {
     for(int i = 0; i < length; i++) {
@@ -129,42 +130,7 @@ void print_bits(uint32_t v) {
     }
 }
 
-int main(int argc, char **argv) {
-    if(argc != 2) {
-        printf("Usage: koi <source>\n");
-        return 0;
-    }
-    
-    Parser p(argv[1]);
-    printf("Starting parsing!\n");
-    Node *nodes = p.Parse();
-    printf("Done parsing!\n");
-    
-    Node *n = nodes;
-    while(n != NULL) {
-        print_node(n);
-        n = n->next;
-    }
-    
-    printf("\n\nBytecode:\n\n");
-    
-    conversion a, b; 
-    a.floatVal = 3.1415f;
-    b.floatVal = 2.5f;
-    
-    uint32_t test[] = {
-        OP_CONST, 4,
-        OP_CONST, 5,
-        OP_CALL, 8, 2,
-        OP_HALT,
-        
-        // func
-        OP_LOAD, (int32_t)-4,
-        OP_LOAD, (int32_t)-3,
-        OP_IISUB,
-        OP_RET,
-    };
-    
+void old_bytcode_test() {
     Node *expr = new Node();
     expr->type = NODE_BINOP;
     expr->binop.type = BINOP_ADD;
@@ -192,17 +158,51 @@ int main(int argc, char **argv) {
     retn->type = NODE_RETURN;
     retn->ret.expr = expr;
     
-    BytecodeBuilder builder;
-    builder.Add(OP_CALL);
-    builder.Add(4);
-    builder.Add(0);
-    builder.Add(OP_HALT);
-    builder.Generate(retn);
+    BytecodeBuilder test_builder;
+    test_builder.Add(OP_CALL);
+    test_builder.Add(4);
+    test_builder.Add(0);
+    test_builder.Add(OP_HALT);
+    test_builder.GenerateExpr(retn);
     
-    //VirtualMachine vm(test, sizeof(test)/sizeof(test[0]), 0);
-    VirtualMachine vm(builder.data, builder.data_size, 0);
-    int32_t ret = vm.Run(true);
+    //VirtualMachine test_vm(test, sizeof(test)/sizeof(test[0]), 0);
+    VirtualMachine test_vm(test_builder.code, test_builder.code_size, 0);
+    int32_t ret = test_vm.Run(true);
     printf("\nvm ret: %d\n", ret);
+}
+
+int main(int argc, char **argv) {
+    if(argc != 2) {
+        printf("Usage: koi <source>\n");
+        return 0;
+    }
+    
+    Parser p(argv[1]);
+    printf("Starting parsing!\n");
+    Node *nodes = p.Parse();
+    printf("Done parsing!\n");
+    
+    Node *n = nodes;
+    while(n != NULL) {
+        print_node(n);
+        n = n->next;
+    }
+    
+    Context *context = new Context();
+    context->Analyse(nodes);
+    
+    BytecodeBuilder builder;
+    builder.Generate(context);
+    
+    printf("Code size: %d\n", builder.code_size);
+    
+    VirtualMachine vm(&builder);
+    int32_t ret_code = vm.Run(true);
+    printf("return code: %d/%f\n",
+        ret_code, *((float*)&ret_code)
+    );
+    
+    // old_bytcode_test();
     
     return 0;
 }

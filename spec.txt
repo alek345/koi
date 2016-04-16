@@ -18,3 +18,18 @@ Stack based
 
 based on: 
 	https://www.youtube.com/watch?v=OjaAToVkoTw
+
+
+Semantic analysis
+
+Should the language be statically type?
+	- Yes!
+
+What types exist?:
+
+	- Integer(signed)
+	- Float(32-bit)
+	- Struct(User defined)
+	- IntegerArray
+	- FloatArray
+	- StructArray

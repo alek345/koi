@@ -311,17 +311,26 @@ Node* Parser::FunctionDef() {
     Token *name = lexer->Current();
     
     int num_arguments = 0;
-    char **arguments = NULL;;
+    char **arguments = NULL;
+    char **argument_types = NULL;
     Token *next = lexer->Next();
     while(next->type != TOKEN_COLON) {
         
         if(next->type == TOKEN_IDENT) {
             
             num_arguments++;
-            arguments = (char**) realloc(arguments, sizeof(char*)*num_arguments);
-            arguments[num_arguments-1] = next->strVal;
+            argument_types = (char**) realloc(argument_types, sizeof(char*)*num_arguments);
+            argument_types[num_arguments-1] = next->strVal;
             next = lexer->Next();
             
+            if(next->type != TOKEN_IDENT) {
+                Error(next, "Expected argument name after type!");
+            }
+            
+            arguments = (char**) realloc(arguments, sizeof(char*)*num_arguments);
+            arguments[num_arguments-1] = next->strVal;
+            
+            next = lexer->Next();
             if(next->type == TOKEN_COLON) {
                 break;
             } else if(next->type == TOKEN_COMMA) {
@@ -349,6 +358,7 @@ Node* Parser::FunctionDef() {
         n->funcdef.name = name->strVal;
         n->funcdef.num_arguments = num_arguments;
         n->funcdef.arguments = arguments;
+        n->funcdef.argument_types = argument_types;
         n->funcdef.stmts = stmts;
     }
     
@@ -382,6 +392,18 @@ Node* Parser::VarDecl() {
     Token *name = lexer->Current();
     
     Token *next = lexer->Next();
+    
+    if(next->type != TOKEN_COLON) {
+        Error(next, "Expected ':' after variable name");
+    }
+    
+    next = lexer->Next();
+    if(next->type != TOKEN_IDENT) {
+        Error(next, "Expected variable type after ':'");
+    }
+    Token *type = name;
+    
+    next = lexer->Next();
     if(next->type == TOKEN_EQUALS) {
         
         if(lexer->Peek()->type == TOKEN_SEMICOLON) {
@@ -403,6 +425,7 @@ Node* Parser::VarDecl() {
         Node *n = new Node();
         n->type = NODE_VARDECLASSIGN;
         n->vardeclassign.name = name->strVal;
+        n->vardeclassign.type = type->strVal;
         n->vardeclassign.expr = expr;
         return n;
         
@@ -413,6 +436,7 @@ Node* Parser::VarDecl() {
         Node *n = new Node();
         n->type = NODE_VARDECL;
         n->vardecl.name = name->strVal;
+        n->vardecl.type = type->strVal;
         return n;
         
     } else {
