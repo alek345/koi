@@ -165,7 +165,42 @@ int main(int argc, char **argv) {
         OP_RET,
     };
     
-    VirtualMachine vm(test, sizeof(test)/sizeof(test[0]), 0);
+    Node *expr = new Node();
+    expr->type = NODE_BINOP;
+    expr->binop.type = BINOP_ADD;
+    expr->binop.lhs = new Node();
+    expr->binop.lhs->type = NODE_LITERAL;
+    expr->binop.lhs->literal.type = LITERAL_INTEGER;
+    expr->binop.lhs->literal.intVal = 5;
+    
+    Node *rhs = new Node();
+    expr->binop.rhs = rhs;
+    rhs->type = NODE_BINOP;
+    rhs->binop.type = BINOP_MUL;
+    
+    rhs->binop.lhs = new Node();
+    rhs->binop.lhs->type = NODE_LITERAL;
+    rhs->binop.lhs->literal.type = LITERAL_INTEGER;
+    rhs->binop.lhs->literal.intVal = 3;
+    
+    rhs->binop.rhs = new Node();
+    rhs->binop.rhs->type = NODE_LITERAL;
+    rhs->binop.rhs->literal.type = LITERAL_INTEGER;
+    rhs->binop.rhs->literal.intVal = 2;
+    
+    Node *retn = new Node();
+    retn->type = NODE_RETURN;
+    retn->ret.expr = expr;
+    
+    BytecodeBuilder builder;
+    builder.Add(OP_CALL);
+    builder.Add(4);
+    builder.Add(0);
+    builder.Add(OP_HALT);
+    builder.Generate(retn);
+    
+    //VirtualMachine vm(test, sizeof(test)/sizeof(test[0]), 0);
+    VirtualMachine vm(builder.data, builder.data_size, 0);
     int32_t ret = vm.Run(true);
     printf("\nvm ret: %d\n", ret);
     

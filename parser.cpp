@@ -138,7 +138,7 @@ Node* Parser::Expr(TokenList *tokens) {
         }
         
         if(t->type == TOKEN_IDENT) {
-            // Can be a function call if succeeded by a '('
+            // Can be a function call if succeeded by ':'
             output.Push(t);
             continue;
         }

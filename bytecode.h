@@ -1,6 +1,7 @@
 #ifndef BYTECODE_H
 #define BYTECODE_H
 #include <stdint.h>
+#include "ast.h"
 
 enum Operand {
     OP_HALT = 0,
@@ -57,6 +58,28 @@ struct VirtualMachine {
     // Retuns the value at the top of the stack at the end
     // of execution
     int32_t Run(bool trace);
+};
+
+
+struct BytecodeBuilder {
+    uint32_t *data;
+    uint32_t data_size;
+    
+    // Let the bytecode builder control how much data
+    // memory to allocate. Check every GSTORE or GLOAD and find the
+    // highest index. This is the amount of data memory required
+    
+    // Find out some way for the bytecode builder to know
+    // where functions are located and what theire names are
+    // Could add all pass all function start and a name to the builder
+    // which in turn calculates the address of the function
+    // based on a name given
+    
+    BytecodeBuilder();
+    
+    void Add(uint32_t val);
+    
+    void Generate(Node *ast);
 };
 
 #endif /* BYTECODE_H */

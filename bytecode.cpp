@@ -1,6 +1,7 @@
 #include "bytecode.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 typedef void(*vmFunc)(VirtualMachine*);
 
@@ -295,7 +296,7 @@ int32_t VirtualMachine::Run(bool trace) {
         uint32_t opcode = code[ip++];
         
         if(trace) {
-            printf("%04X: %s", ip, op_to_string((Operand)opcode));
+            printf("%04X: %s", ip-1, op_to_string((Operand)opcode));
         }
         
         ops[opcode](this);
@@ -311,4 +312,90 @@ int32_t VirtualMachine::Run(bool trace) {
     
     if(sp >= 0) return (int32_t) stack[sp];
     return 0;
+}
+
+BytecodeBuilder::BytecodeBuilder() {
+    data = NULL;
+    data_size = 0;
+}
+
+void BytecodeBuilder::Add(uint32_t val) {
+    data_size++;
+    data = (uint32_t*) realloc(data, sizeof(uint32_t)*data_size);
+    data[data_size-1] = val;
+}
+
+void BytecodeBuilder::Generate(Node *ast) {
+    
+    Node *n = ast;
+    while(n != NULL) {
+        switch(n->type) {
+            case NODE_LITERAL: {
+                switch(n->literal.type) {
+                    case LITERAL_INTEGER: {
+                        Add(OP_CONST);
+                        Add(n->literal.intVal);
+                        return;
+                        n = n->next;
+                    } break;
+                    
+                    case LITERAL_FLOAT: {
+                        Add(OP_CONST);
+                        conversion c;
+                        c.floatVal = n->literal.floatVal;
+                        Add(c.intVal);
+                        return;
+                        n = n->next;
+                    } break;
+                    
+                    case LITERAL_STRING: {
+                        assert(!"BCBuilder: Strings not implemented yet");
+                    } break;
+                    
+                }
+            };
+            
+            case NODE_BINOP: {
+                // Binop requires info about types
+                // but i quess i will get that when i do
+                // semantics and parse symbols, functions etc.
+                // for now everything is an int
+                switch(n->binop.type) {
+                    case BINOP_ADD: {
+                        Generate(n->binop.lhs);
+                        Generate(n->binop.rhs);
+                        Add(OP_IIADD);
+                    } break;
+                    
+                    case BINOP_SUB: {
+                        Generate(n->binop.lhs);
+                        Generate(n->binop.rhs);
+                        Add(OP_IISUB);
+                    } break;
+                    
+                    case BINOP_MUL: {
+                        Generate(n->binop.lhs);
+                        Generate(n->binop.rhs);
+                        Add(OP_IIMUL);
+                    } break;
+                    
+                    case BINOP_DIV: {
+                        Generate(n->binop.lhs);
+                        Generate(n->binop.rhs);
+                        Add(OP_IIDIV);
+                    } break;
+                }
+                
+                return;
+                n = n->next;
+            } break;
+            
+            case NODE_RETURN: {
+                Generate(n->ret.expr);
+                Add(OP_RET);
+                return;
+            } break;
+        }
+    }
+    
 }
