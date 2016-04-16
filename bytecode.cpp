@@ -343,6 +343,7 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
                     case LITERAL_INTEGER: {
                         Add(OP_CONST);
                         Add(n->literal.intVal);
+                        printf("int lit val: %d\n", n->literal.intVal);;
                         return;
                         n = n->next;
                     } break;
@@ -367,7 +368,7 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
                 
                 //
                 Add(OP_CONST);
-                Add(5);
+                Add(999);
                 return;
                 
             } break;
@@ -413,8 +414,10 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
 
 void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
     
-    Node *n = function->node;
+    Node *n = function->node->funcdef.stmts;
     while(n != NULL) {
+        printf("Hello?\n");
+        
         switch(n->type) {
             case NODE_RETURN: {
                 GenerateExpr(context, n->ret.expr);
@@ -452,6 +455,11 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
                 Add(func->code_offset);
                 Add(n->funccall.num_arguments);
                 Add(OP_POP); // Since the value is not assigned anywhere
+            } break;
+            
+            default: {
+                printf("node type: %d\n", n->type);
+                assert(!"GenFunc default switch");
             } break;
         }
         

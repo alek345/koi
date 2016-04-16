@@ -5,12 +5,12 @@
 #var test: Integer;
 #test = 4*2;
 
-#var c:Integer = 32 * 45;
+var c:Integer = 32 * 45;
 
 function add Integer a, Integer b:
-	return 4 + 2;
+	return 77 + 33;
 endfunction
 
-add: 5+3, 4;
+add: 11, 14;
 
-return 5 + 3;
+return 5 + 4;

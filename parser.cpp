@@ -369,6 +369,7 @@ Node* Parser::FunctionDef() {
         
         stmt->next = newstmt;
         newstmt->prev = stmt;
+        stmt = newstmt;
     }
     
     lexer->Next(); // Consume endfunction
