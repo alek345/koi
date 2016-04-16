@@ -17,7 +17,7 @@ void iiadd(VirtualMachine *vm) {
     int32_t b = (int32_t) vm->stack[vm->sp--];
     int32_t a = (int32_t) vm->stack[vm->sp--];
     vm->sp++;
-    vm->stack[vm->sp] = (a + b);
+    vm->stack[vm->sp] = (int32_t)(a + b);
 }
 
 void ffadd(VirtualMachine *vm) {
@@ -53,7 +53,7 @@ void iisub(VirtualMachine *vm) {
     int32_t b = (int32_t) vm->stack[vm->sp--];
     int32_t a = (int32_t) vm->stack[vm->sp--];
     vm->sp++;
-    vm->stack[vm->sp] = (a - b);
+    vm->stack[vm->sp] = (int32_t)(a - b);
 }
 
 void ffsub(VirtualMachine *vm) {
@@ -89,7 +89,7 @@ void iimul(VirtualMachine *vm) {
     int32_t b = (int32_t) vm->stack[vm->sp--];
     int32_t a = (int32_t) vm->stack[vm->sp--];
     vm->sp++;
-    vm->stack[vm->sp] = (a * b);
+    vm->stack[vm->sp] = (int32_t)(a * b);
 }
 
 void ffmul(VirtualMachine *vm) {
@@ -125,7 +125,7 @@ void iidiv(VirtualMachine *vm) {
     int32_t b = (int32_t) vm->stack[vm->sp--];
     int32_t a = (int32_t) vm->stack[vm->sp--];
     vm->sp++;
-    vm->stack[vm->sp] = (a / b);
+    vm->stack[vm->sp] = (int32_t)(a / b);
 }
 
 void ffdiv(VirtualMachine *vm) {
@@ -159,6 +159,50 @@ void pop(VirtualMachine *vm) {
     vm->sp--;
 }
 
+void br(VirtualMachine *vm) {
+    vm->ip = vm->code[vm->ip++];
+}
+
+void brt(VirtualMachine *vm) {
+    uint32_t addr = vm->code[vm->ip++];
+    if(vm->stack[vm->sp--] != 0) vm->ip = addr;
+}
+
+void brf(VirtualMachine *vm) {
+    uint32_t addr = vm->code[vm->ip++];
+    if(vm->stack[vm->sp--] == 0) vm->ip = addr;
+}
+
+void call(VirtualMachine *vm) {
+    uint32_t addr = vm->code[vm->ip++];
+    int nargs = vm->code[vm->ip++];
+    vm->stack[++vm->sp] = nargs;
+    vm->stack[++vm->sp] = vm->fp;
+    vm->stack[++vm->sp] = vm->ip;
+    vm->fp = vm->sp;
+    vm->ip = addr;
+}
+
+void ret(VirtualMachine *vm) {
+    int retval = vm->stack[vm->sp--];
+    vm->sp = vm->fp;
+    vm->ip = vm->stack[vm->sp--];
+    vm->fp = vm->stack[vm->sp--];
+    int nargs = vm->stack[vm->sp--];
+    vm->sp -= nargs;
+    vm->stack[++vm->sp] = retval;
+}
+
+void load(VirtualMachine *vm) {
+    int32_t val = (int32_t) vm->code[vm->ip++];
+    vm->stack[++vm->sp] = vm->stack[vm->fp + val];
+}
+
+void store(VirtualMachine *vm) {
+    int32_t val = (int32_t) vm->code[vm->ip++];
+    vm->code[vm->fp + val] = vm->stack[vm->sp--];
+}
+
 char *op_to_string(Operand op) {
     switch(op) {
 #define OP(op) case op: { return #op ;}
@@ -186,6 +230,8 @@ char *op_to_string(Operand op) {
         OP(OP_CALL);
         OP(OP_RET);
         OP(OP_POP);
+        OP(OP_LOAD);
+        OP(OP_STORE);
 #undef OP
     }
     
@@ -232,6 +278,16 @@ static vmFunc ops[] = {
     ifmul,
     
     pop,
+    
+    br,
+    brt,
+    brf,
+    
+    call,
+    ret,
+    
+    load,
+    store,
 };
 
 int32_t VirtualMachine::Run(bool trace) {

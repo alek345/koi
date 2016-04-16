@@ -27,6 +27,8 @@ enum Operand {
     OP_BRF,
     OP_CALL,
     OP_RET,
+    OP_LOAD,
+    OP_STORE,
 };
 
 union conversion {
@@ -44,7 +46,7 @@ struct VirtualMachine {
     uint32_t *stack;
     uint32_t ip;
     int32_t sp;
-    uint32_t fp;
+    int32_t fp;
     bool halt;
     
     uint32_t code_size;

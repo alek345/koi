@@ -153,18 +153,16 @@ int main(int argc, char **argv) {
     b.floatVal = 2.5f;
     
     uint32_t test[] = {
-        OP_CONST, a.intVal,
-        OP_CONST, 5,
-        OP_FIADD,
-        OP_POP,
-        OP_CONST, 5,
-        OP_CONST, b.intVal,
-        OP_IFADD,
-        OP_POP,
         OP_CONST, 4,
-        OP_CONST, 3,
-        OP_IIADD,
+        OP_CONST, 5,
+        OP_CALL, 8, 2,
         OP_HALT,
+        
+        // func
+        OP_LOAD, (int32_t)-4,
+        OP_LOAD, (int32_t)-3,
+        OP_IISUB,
+        OP_RET,
     };
     
     VirtualMachine vm(test, sizeof(test)/sizeof(test[0]), 0);
