@@ -62,11 +62,10 @@ struct BytecodeBuilder {
     
     void Add(uint32_t val);
     
-    void GenerateExpr(Node *ast);
-    
+    void GenerateExpr(Context *context, Node *ast);
     void Generate(Context *context, Node *node);
     void Generate(Context *context);
-    void GenerateFunction(Function *function);
+    void GenerateFunction(Context *context, Function *function);
 };
 
 struct VirtualMachine {

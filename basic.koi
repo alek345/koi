@@ -2,11 +2,15 @@
 #onearg: 1234;
 #hello: "Test!", 360*32, 240, some_var;
 
-var test: Integer;
-test = 4*2;
+#var test: Integer;
+#test = 4*2;
+
+#var c:Integer = 32 * 45;
 
 function add Integer a, Integer b:
-	return a + b;
+	return 4 + 2;
 endfunction
+
+add: 5+3, 4;
 
 return 5 + 3;

@@ -333,7 +333,7 @@ void BytecodeBuilder::Add(uint32_t val) {
     code[code_size-1] = val;
 }
 
-void BytecodeBuilder::GenerateExpr(Node *ast) {
+void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
     
     Node *n = ast;
     while(n != NULL) {
@@ -363,6 +363,15 @@ void BytecodeBuilder::GenerateExpr(Node *ast) {
                 }
             };
             
+            case NODE_VARIABLE: {
+                
+                //
+                Add(OP_CONST);
+                Add(5);
+                return;
+                
+            } break;
+            
             case NODE_BINOP: {
                 // Binop requires info about types
                 // but i quess i will get that when i do
@@ -370,26 +379,26 @@ void BytecodeBuilder::GenerateExpr(Node *ast) {
                 // for now everything is an int
                 switch(n->binop.type) {
                     case BINOP_ADD: {
-                        GenerateExpr(n->binop.lhs);
-                        GenerateExpr(n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, n->binop.rhs);
                         Add(OP_IIADD);
                     } break;
                     
                     case BINOP_SUB: {
-                        GenerateExpr(n->binop.lhs);
-                        GenerateExpr(n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, n->binop.rhs);
                         Add(OP_IISUB);
                     } break;
                     
                     case BINOP_MUL: {
-                        GenerateExpr(n->binop.lhs);
-                        GenerateExpr(n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, n->binop.rhs);
                         Add(OP_IIMUL);
                     } break;
                     
                     case BINOP_DIV: {
-                        GenerateExpr(n->binop.lhs);
-                        GenerateExpr(n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, n->binop.rhs);
                         Add(OP_IIDIV);
                     } break;
                 }
@@ -402,20 +411,19 @@ void BytecodeBuilder::GenerateExpr(Node *ast) {
     
 }
 
-void BytecodeBuilder::GenerateFunction(Function *function) {
+void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
     
     Node *n = function->node;
     while(n != NULL) {
         switch(n->type) {
             case NODE_RETURN: {
-                GenerateExpr(n->ret.expr);
+                GenerateExpr(context, n->ret.expr);
                 Add(OP_RET);
-                return;
             } break;
             
             case NODE_ASSIGNMENT: {
                 // This may be a argument
-                GenerateExpr(n->assignment.expr);
+                GenerateExpr(context, n->assignment.expr);
                 
                 // Check if the variable is declared
                 // if not check global variables
@@ -426,7 +434,28 @@ void BytecodeBuilder::GenerateFunction(Function *function) {
                 Add(OP_STORE);
                 Add(index);
             } break;
+            
+            case NODE_FUNCCALL: {
+                
+                if(!context->FunctionExists(n->funccall.name)) {
+                    assert(!"Functions does not exist!");
+                }
+                Function *func = context->GetFunction(n->funccall.name);
+                
+                // TODO: Check if argument count and types are correct
+                
+                for(int i = 0; i < n->funccall.num_arguments; i++) {
+                    GenerateExpr(context, n->funccall.arguments[i]);
+                }
+                
+                Add(OP_CALL);
+                Add(func->code_offset);
+                Add(n->funccall.num_arguments);
+                Add(OP_POP); // Since the value is not assigned anywhere
+            } break;
         }
+        
+        n = n->next;
     }
     
 }
@@ -435,7 +464,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
     switch(n->type) {
         
         case NODE_RETURN: {
-            GenerateExpr(n->ret.expr);
+            GenerateExpr(context, n->ret.expr);
             // When in global scope we halt the program
             // instead of a op_ret
             Add(OP_HALT);
@@ -444,15 +473,36 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
             
         case NODE_ASSIGNMENT: {
             // This may be a argument
-            GenerateExpr(n->assignment.expr);
+            GenerateExpr(context, n->assignment.expr);
             
             int index = context->GetIndexOfGlobal(n->assignment.name);
             Add(OP_STORE);
             Add(index);
+            return;
         } break;
         
+        case NODE_FUNCCALL: {
+            
+            if(!context->FunctionExists(n->funccall.name)) {
+                assert(!"Functions does not exist!");
+            }
+            Function *func = context->GetFunction(n->funccall.name);
+                
+            // TODO: Check if argument count and types are correct
+            
+            for(int i = 0; i < n->funccall.num_arguments; i++) {
+                GenerateExpr(context, n->funccall.arguments[i]);
+            }
+                
+            Add(OP_CALL);
+            Add(func->code_offset);
+            Add(n->funccall.num_arguments);
+            Add(OP_POP); // Since the value is not assigned anywhere
+            return;
+        } break;
         
         default: {
+            printf("bcbuilder: type %d\n", n->type);
             printf("BytecodeBuilder::Generate(Context*, Node*): Wops?\n");
         } break;
     }
@@ -464,22 +514,23 @@ void BytecodeBuilder::Generate(Context *context) {
     
     for(int i = 0; i < context->num_functions; i++) {
         Function *func = context->functions[i];
-        func->code_offset = this->data_size - 1;
+        func->code_offset = this->code_size;
         
         // Generate bytecode for the function nodes
-        GenerateFunction(func);
-
+        GenerateFunction(context, func);
+        
         // Always add a return at the end
         Add(OP_RET);
     }
     
     // Save the location of where the code has to
     // start execution
-    start_ip = code_size-1;
-    if(code_size == 0) start_ip = 0;
+    start_ip = code_size;
     
     Node *n = context->stmts;
+    int stmts = 0;
     while(n != NULL) {
+        printf("stmts: %d\n", ++stmts);
         Generate(context, n);
         n = n->next;
     }

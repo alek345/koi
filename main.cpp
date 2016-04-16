@@ -130,47 +130,6 @@ void print_bits(uint32_t v) {
     }
 }
 
-void old_bytcode_test() {
-    Node *expr = new Node();
-    expr->type = NODE_BINOP;
-    expr->binop.type = BINOP_ADD;
-    expr->binop.lhs = new Node();
-    expr->binop.lhs->type = NODE_LITERAL;
-    expr->binop.lhs->literal.type = LITERAL_INTEGER;
-    expr->binop.lhs->literal.intVal = 5;
-    
-    Node *rhs = new Node();
-    expr->binop.rhs = rhs;
-    rhs->type = NODE_BINOP;
-    rhs->binop.type = BINOP_MUL;
-    
-    rhs->binop.lhs = new Node();
-    rhs->binop.lhs->type = NODE_LITERAL;
-    rhs->binop.lhs->literal.type = LITERAL_INTEGER;
-    rhs->binop.lhs->literal.intVal = 3;
-    
-    rhs->binop.rhs = new Node();
-    rhs->binop.rhs->type = NODE_LITERAL;
-    rhs->binop.rhs->literal.type = LITERAL_INTEGER;
-    rhs->binop.rhs->literal.intVal = 2;
-    
-    Node *retn = new Node();
-    retn->type = NODE_RETURN;
-    retn->ret.expr = expr;
-    
-    BytecodeBuilder test_builder;
-    test_builder.Add(OP_CALL);
-    test_builder.Add(4);
-    test_builder.Add(0);
-    test_builder.Add(OP_HALT);
-    test_builder.GenerateExpr(retn);
-    
-    //VirtualMachine test_vm(test, sizeof(test)/sizeof(test[0]), 0);
-    VirtualMachine test_vm(test_builder.code, test_builder.code_size, 0);
-    int32_t ret = test_vm.Run(true);
-    printf("\nvm ret: %d\n", ret);
-}
-
 int main(int argc, char **argv) {
     if(argc != 2) {
         printf("Usage: koi <source>\n");
@@ -201,8 +160,6 @@ int main(int argc, char **argv) {
     printf("return code: %d/%f\n",
         ret_code, *((float*)&ret_code)
     );
-    
-    // old_bytcode_test();
     
     return 0;
 }

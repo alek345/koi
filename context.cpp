@@ -70,7 +70,6 @@ Function* Context::GetFunction(char *name) {
 }
 
 Node* FindFunctions(Context *context, Node *nodes) {
-    
     Node **functions = NULL;
     int nfuncs = 0;
     
@@ -78,11 +77,12 @@ Node* FindFunctions(Context *context, Node *nodes) {
     
     Node *n = nodes;
     while(n != NULL) {
-        printf("node type: %d\n", n->type);
+        printf("node#type: %d\n", n->type);
         
         if(n->type == NODE_FUNCDEF) {
             if(n->prev != NULL) n->prev->next = n->next;
             if(n->next != NULL) n->next->prev = n->prev;
+            
             nfuncs++;
             functions = (Node**) realloc(functions, sizeof(Node*)*nfuncs);
             functions[nfuncs-1] = n;
@@ -98,9 +98,14 @@ Node* FindFunctions(Context *context, Node *nodes) {
         Function *function = new Function();
         function->node = functions[i];
         
+        context->num_functions++;
+        context->functions = (Function**) realloc(context->functions, sizeof(Function*)*context->num_functions);
+        context->functions[context->num_functions-1] = function; 
+        
         function->local_variables = NULL;
         function->num_locals = 0;
         
+        Node *stmts_first_not_removed = NULL;
         n = function->node->funcdef.stmts;
         while(n != NULL) {
          
@@ -135,11 +140,19 @@ Node* FindFunctions(Context *context, Node *nodes) {
                 function->num_locals++;
                 function->local_variables = (Variable**) realloc(function->local_variables, sizeof(Variable*)*function->num_locals);
                 function->local_variables[function->num_locals-1] = var;
+                
+                if(stmts_first_not_removed == NULL) {
+                    stmts_first_not_removed = n;
+                }
+            }
+            
+            if(stmts_first_not_removed == NULL) {
+                stmts_first_not_removed = n;
             }
             
             n = n->next;
         }
-        
+        function->node->funcdef.stmts = stmts_first_not_removed;
     }
     
     return first_not_removed;
@@ -172,6 +185,7 @@ Node* FindGlobals(Context *context, Node *nodes) {
             n->type = NODE_ASSIGNMENT;
             char *name = n->vardeclassign.name;
             Node *expr = n->vardeclassign.expr;
+            char *type = n->vardeclassign.type;
             n->assignment.name = name;
             n->assignment.expr = expr;
                 
@@ -179,12 +193,17 @@ Node* FindGlobals(Context *context, Node *nodes) {
             var->node = new Node();
             var->node->type = NODE_VARDECL;
             var->node->vardecl.name = name;
+            var->node->vardecl.type = type;
             var->node->next = NULL;
             var->node->prev = NULL;
             
             context->num_globals++;
             context->global_variables = (Variable**) realloc(context->global_variables, sizeof(Variable*)*context->num_globals);
             context->global_variables[context->num_globals-1] = var;
+            
+            if(first_not_removed == NULL) {
+                first_not_removed = n;
+            }
         }
         
         if(first_not_removed == NULL) {
@@ -210,6 +229,7 @@ void Context::Analyse(Node *nodes) {
     
     // Take out function definitions
     nodes = FindFunctions(this, nodes);
+    printf("functions: %d\n", num_functions);
     
     // TODO: Semantic analysis inside the function
     // Check things like function call
@@ -217,6 +237,7 @@ void Context::Analyse(Node *nodes) {
     // Take out all global declerations
     // but keep assignments
     nodes = FindGlobals(this, nodes);
+    printf("globals: %d\n", num_globals);
     
     // TODO: Type-checking
     TypeCheck();

@@ -2,7 +2,7 @@
 #define AST_H
 
 enum NodeType {
-    NODE_LITERAL,
+    NODE_LITERAL = 0,
     NODE_VARIABLE,
     NODE_FUNCCALL,
     NODE_VARDECL,
