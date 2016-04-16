@@ -204,6 +204,11 @@ void store(VirtualMachine *vm) {
     vm->code[vm->fp + val] = vm->stack[vm->sp--];
 }
 
+void gstore(VirtualMachine *vm) {
+    int32_t val = (int32_t) vm->code[vm->ip++];
+    vm->data[val] = vm->stack[vm->sp--];
+}
+
 char *op_to_string(Operand op) {
     switch(op) {
 #define OP(op) case op: { return #op ;}
@@ -233,6 +238,7 @@ char *op_to_string(Operand op) {
         OP(OP_POP);
         OP(OP_LOAD);
         OP(OP_STORE);
+        OP(OP_GSTORE);
 #undef OP
     }
     
@@ -295,6 +301,8 @@ static vmFunc ops[] = {
     
     load,
     store,
+    
+    gstore,
 };
 
 int32_t VirtualMachine::Run(bool trace) {
@@ -484,7 +492,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
             GenerateExpr(context, n->assignment.expr);
             
             int index = context->GetIndexOfGlobal(n->assignment.name);
-            Add(OP_STORE);
+            Add(OP_GSTORE);
             Add(index);
             return;
         } break;

@@ -31,6 +31,7 @@ enum Operand {
     OP_RET,
     OP_LOAD,
     OP_STORE,
+    OP_GSTORE,
 };
 
 union conversion {

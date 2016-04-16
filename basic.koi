@@ -2,13 +2,18 @@
 #onearg: 1234;
 #hello: "Test!", 360*32, 240, some_var;
 
-#var test: Integer;
-#test = 4*2;
+var test: Integer;
+test = 4*2;
 
 var c:Integer = 32 * 45;
 
+
 function add Integer a, Integer b:
-	return 77 + 33;
+	var local: Integer = 1024*256;
+	
+	# Does not works since the bytecode expression writer
+	# doesnt yet support variables
+	return local;
 endfunction
 
 add: 11, 14;
