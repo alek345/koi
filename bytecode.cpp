@@ -307,11 +307,13 @@ static vmFunc ops[] = {
 
 int32_t VirtualMachine::Run(bool trace) {
     printf("ip: %d, code_size: %d\n", ip, code_size);
+    
+    uint32_t opcode = code[ip];
     while((!halt) && ip < code_size) {
-        uint32_t opcode = code[ip++];
+        ip++;
         
         if(trace) {
-            printf("%04X: %s:%d", ip-1, op_to_string((Operand)opcode), opcode);
+            printf("%04X: %s:%d", ip, op_to_string((Operand)opcode), opcode);
         }
         
         ops[opcode](this);
@@ -323,6 +325,8 @@ int32_t VirtualMachine::Run(bool trace) {
             }
             printf(" ]\n");
         }
+        
+        opcode = code[ip];
     }
     
     if(sp >= 0) return (int32_t) stack[sp];

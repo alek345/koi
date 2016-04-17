@@ -8,6 +8,10 @@ struct Variable {
     Node *node;
 };
 
+// TODO: Save arguments, types and a function that
+// will figure out if a variable exists, is a local variable
+// global variable or argument. Probably make a simple
+// GetVariable(char *name) that figures this out
 struct Function {
     Node *node;
     Variable **local_variables;

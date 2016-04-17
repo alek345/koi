@@ -7,6 +7,23 @@ test = 4*2;
 
 var c:Integer = 32 * 45;
 
+# Would store the name print, and the number of arguments
+# the bytecode generated should look something like
+# CALL_NATIVE, name, nargs
+# The actual fuction might look like:
+# 
+# uint32_t print_int(VirtualMachine *vm) {
+# 	int32_t val = vm->stack[vm->sp--];
+# 	printf("%d", val);
+# 	return 0;
+# }
+# 
+# The decleration
+#
+# cfunction print_int Integer i;
+# cfunction println;
+# cfunction native_add Integer a, Integer b;
+
 function add Integer a, Integer b:
 	var local: Integer = 1024*256;
 	
