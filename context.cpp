@@ -18,7 +18,7 @@ int Function::GetIndexOfLocal(char *name) {
     for(int i = 0; i < num_locals; i++) {
         Variable *var = local_variables[i];
         if(strcmp(var->node->vardecl.name, name) == 0) {
-            return i;
+            return i+1;
         }
     }
     

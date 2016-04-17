@@ -311,7 +311,7 @@ int32_t VirtualMachine::Run(bool trace) {
         uint32_t opcode = code[ip++];
         
         if(trace) {
-            printf("%04X: %s", ip-1, op_to_string((Operand)opcode));
+            printf("%04X: %s:%d", ip-1, op_to_string((Operand)opcode), opcode);
         }
         
         ops[opcode](this);
@@ -339,6 +339,37 @@ void BytecodeBuilder::Add(uint32_t val) {
     code_size++;
     code = (uint32_t*) realloc(code, sizeof(uint32_t)*code_size);
     code[code_size-1] = val;
+}
+
+void WriteU32(FILE *f, uint32_t value) {
+    uint32_t a = (value>>24)&0xFF;
+    uint32_t b = (value>>16)&0xFF;
+    uint32_t c = (value>>8)&0xFF;
+    uint32_t d = (value)&0xFF;
+    
+    fwrite(&a, 1, 1, f);
+    fwrite(&b, 1, 1, f);
+    fwrite(&c, 1, 1, f);
+    fwrite(&d, 1, 1, f);
+}
+
+void BytecodeBuilder::Write(const char *path) {
+    
+    FILE *f = fopen(path, "wb");
+    
+    char magic[] = "KOIC";
+    fwrite(magic, 1, 4, f);
+    
+    WriteU32(f, start_ip);
+    WriteU32(f, code_size);
+    WriteU32(f, data_size);
+    
+    for(int i = 0; i < code_size; i++) {
+        WriteU32(f, code[i]);
+    }
+    
+    fflush(f);
+    fclose(f);
 }
 
 void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
@@ -443,7 +474,7 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
                 
                 int index = function->GetIndexOfLocal(n->assignment.name);
                 Add(OP_STORE);
-                Add(index);
+                Add(*(uint32_t*)&index);
             } break;
             
             case NODE_FUNCCALL: {

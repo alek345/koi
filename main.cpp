@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
     
     BytecodeBuilder builder;
     builder.Generate(context);
+    builder.Write("output.koic");
     
     printf("Code size: %d\n", builder.code_size);
     

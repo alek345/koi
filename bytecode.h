@@ -63,6 +63,8 @@ struct BytecodeBuilder {
     
     void Add(uint32_t val);
     
+    void Write(const char *path);
+    
     void GenerateExpr(Context *context, Node *ast);
     void Generate(Context *context, Node *node);
     void Generate(Context *context);

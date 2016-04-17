@@ -7,7 +7,6 @@ test = 4*2;
 
 var c:Integer = 32 * 45;
 
-
 function add Integer a, Integer b:
 	var local: Integer = 1024*256;
 	
@@ -17,5 +16,11 @@ function add Integer a, Integer b:
 endfunction
 
 add: 11, 14;
+
+# Calling this twice doesn't work. Probably has something to do with
+# the stack
+# Guessing its storing
+#add: 11, 14;
+
 
 return 5 + 4;
