@@ -285,10 +285,10 @@ static vmFunc ops[] = {
     fimul,
     ifmul,
     
-    iimul,
-    ffmul,
-    fimul,
-    ifmul,
+    iidiv,
+    ffdiv,
+    fidiv,
+    ifdiv,
     
     pop,
     
@@ -342,10 +342,10 @@ void BytecodeBuilder::Add(uint32_t val) {
 }
 
 void WriteU32(FILE *f, uint32_t value) {
-    uint32_t a = (value>>24)&0xFF;
-    uint32_t b = (value>>16)&0xFF;
-    uint32_t c = (value>>8)&0xFF;
-    uint32_t d = (value)&0xFF;
+    uint8_t a = (value>>24)&0xFF;
+    uint8_t b = (value>>16)&0xFF;
+    uint8_t c = (value>>8)&0xFF;
+    uint8_t d = (value)&0xFF;
     
     fwrite(&a, 1, 1, f);
     fwrite(&b, 1, 1, f);
@@ -382,7 +382,6 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
                     case LITERAL_INTEGER: {
                         Add(OP_CONST);
                         Add(n->literal.intVal);
-                        printf("int lit val: %d\n", n->literal.intVal);;
                         return;
                         n = n->next;
                     } break;
@@ -419,26 +418,26 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
                 // for now everything is an int
                 switch(n->binop.type) {
                     case BINOP_ADD: {
-                        GenerateExpr(context, n->binop.lhs);
                         GenerateExpr(context, n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
                         Add(OP_IIADD);
                     } break;
                     
                     case BINOP_SUB: {
-                        GenerateExpr(context, n->binop.lhs);
                         GenerateExpr(context, n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
                         Add(OP_IISUB);
                     } break;
                     
                     case BINOP_MUL: {
-                        GenerateExpr(context, n->binop.lhs);
                         GenerateExpr(context, n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
                         Add(OP_IIMUL);
                     } break;
                     
                     case BINOP_DIV: {
-                        GenerateExpr(context, n->binop.lhs);
                         GenerateExpr(context, n->binop.rhs);
+                        GenerateExpr(context, n->binop.lhs);
                         Add(OP_IIDIV);
                     } break;
                 }
@@ -455,7 +454,6 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
     
     Node *n = function->node->funcdef.stmts;
     while(n != NULL) {
-        printf("Hello?\n");
         
         switch(n->type) {
             case NODE_RETURN: {

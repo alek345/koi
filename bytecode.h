@@ -37,6 +37,7 @@ enum Operand {
 union conversion {
     float floatVal;
     uint32_t intVal;
+    int32_t sintVal;
 };
 
 #define STACK_SIZE 4096

@@ -19,8 +19,9 @@ add: 11, 14;
 
 # Calling this twice doesn't work. Probably has something to do with
 # the stack
-# Guessing its storing
+# Guessing its storing int the wrong location
 #add: 11, 14;
 
+var k: Integer = 12*666/2;
 
-return 5 + 4;
+return 4 - 5;
