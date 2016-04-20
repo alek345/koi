@@ -28,6 +28,7 @@ enum TokenType {
     TOKEN_EQUALS,
     TOKEN_VAR,
     TOKEN_RETURN,
+	TOKEN_STRUCT,
 };
 
 char *token_type_to_string(TokenType type);

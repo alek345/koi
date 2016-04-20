@@ -43,6 +43,7 @@ char *token_type_to_string(TokenType type) {
         TOKEN(TOKEN_EQUALS);
         TOKEN(TOKEN_VAR);
         TOKEN(TOKEN_RETURN);
+		TOKEN(TOKEN_STRUCT);
 #undef TOKEN
     }
 }
@@ -348,6 +349,7 @@ void Lexer::Lex() {
             KEYWORD("endif", TOKEN_ENDIF);
             KEYWORD("var", TOKEN_VAR);
             KEYWORD("return", TOKEN_RETURN);
+			KEYWORD("struct", TOKEN_STRUCT);
 #undef KEYWORD
         }
     }

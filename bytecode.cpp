@@ -552,7 +552,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
         
         default: {
             printf("bcbuilder: type %d\n", n->type);
-            printf("BytecodeBuilder::Generate(Context*, Node*): Wops?\n");
+			assert(!"BytecodeBuilder::Generate(Context*, Node*): Wops?");
         } break;
     }
 }
