@@ -161,10 +161,6 @@ int main(int argc, char **argv) {
     printf("return code: %d/%f\n",
         ret_code, *((float*)&ret_code)
     );
-
-#ifdef _WIN32
-	system("pause");
-#endif
     
     return 0;
 }

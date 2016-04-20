@@ -37,7 +37,9 @@ struct Context {
     
     Node *stmts;
     
-    void TypeCheck();
+	Type GetExprType(Node *expr);
+
+    void TypeCheck(Node *nodes);
     void Analyse(Node *n);
 };
 

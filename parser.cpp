@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <string.h>
    
 TokenList::TokenList() {
     num_tokens = 0;
@@ -383,16 +384,44 @@ Node* Parser::FunctionDef() {
     return n;
 }
 
+TypeType type_name_to_type(char *type_name) {
+
+	if (strcmp(type_name, "int") == 0) {
+		return TYPE_INTEGER;
+	}
+	else if (strcmp(type_name, "float") == 0) {
+		return TYPE_FLOAT;
+	}
+	else if (strcmp(type_name, "string") == 0) {
+		return TYPE_STRING;
+	}
+
+	return TYPE_UNKNOWN;
+}
+
 Node* Parser::VarDecl() {
     lexer->Next();
     
-    if(lexer->Current()->type != TOKEN_IDENT) {
-        Error(lexer->Current(), "Expected variable name after var keyword!");
-    }
-    
-    Token *name = lexer->Current();
-    
-    Token *next = lexer->Next();
+	Token *next = lexer->Current();
+	Token *name;
+	bool is_struct = false;
+
+	if (next->type == TOKEN_STRUCT) {	
+		next = lexer->Next();
+		is_struct = true;
+		if (next->type != TOKEN_IDENT) {
+			Error(next, "Expected identifier after 'struct'!");
+		}
+		name = next;
+	}
+	else if (next->type == TOKEN_IDENT) {
+		name = next;
+	}
+	else {
+		Error(next, "Exected 'struct' or identifier!");
+	}
+
+    next = lexer->Next();
     
     if(next->type != TOKEN_COLON) {
         Error(next, "Expected ':' after variable name");
@@ -402,7 +431,7 @@ Node* Parser::VarDecl() {
     if(next->type != TOKEN_IDENT) {
         Error(next, "Expected variable type after ':'");
     }
-    Token *type = name;
+    Token *type = next;
     
     next = lexer->Next();
     if(next->type == TOKEN_EQUALS) {
@@ -426,8 +455,24 @@ Node* Parser::VarDecl() {
         Node *n = new Node();
         n->type = NODE_VARDECLASSIGN;
         n->vardeclassign.name = name->strVal;
-        n->vardeclassign.type = type->strVal;
         n->vardeclassign.expr = expr;
+        
+		Type t;
+
+		if (is_struct) {
+			t.type = TYPE_STRUCT;
+			t.struct_name = type->strVal;
+		}
+		else {
+			TypeType tt = type_name_to_type(type->strVal);
+			if (tt == TYPE_UNKNOWN) {
+				Error(type, "Unknown type '%s'!", type->strVal);
+			}
+
+			t.type = tt;
+		}
+
+		n->vardeclassign.type = t;
         return n;
         
     } else if(next->type == TOKEN_SEMICOLON) {
@@ -437,11 +482,28 @@ Node* Parser::VarDecl() {
         Node *n = new Node();
         n->type = NODE_VARDECL;
         n->vardecl.name = name->strVal;
-        n->vardecl.type = type->strVal;
+        
+		Type t;
+
+		if (is_struct) {
+			t.type = TYPE_STRUCT;
+			t.struct_name = type->strVal;
+		}
+		else {
+			TypeType tt = type_name_to_type(type->strVal);
+			if (tt == TYPE_UNKNOWN) {
+				Error(type, "Unknown type '%s'!", type->strVal);
+			}
+
+			t.type = tt;
+		}
+
+		n->vardeclassign.type = t;
+
         return n;
         
     } else {
-        Error(next, "Expected '=' or ';'");
+        Error(next, "Expected '=' or ';'!");
     }
 }
 

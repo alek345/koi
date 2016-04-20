@@ -408,9 +408,14 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
             
             case NODE_VARIABLE: {
                 
-                //
-                Add(OP_CONST);
-                Add(999);
+                // We need a way to what function we are in
+				// if any
+
+				// Then check for the variable in local space
+				// then in global space
+
+                //Add(OP_CONST);
+                //Add(999);
                 return;
                 
             } break;

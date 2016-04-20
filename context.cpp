@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 bool Function::Declared(char *name) {
     for(int i = 0; i < num_locals; i++) {
@@ -23,6 +24,7 @@ int Function::GetIndexOfLocal(char *name) {
     }
     
     // TODO: Figure out what a invalid return value should be
+	assert(false);
 }
 
 int Context::GetIndexOfGlobal(char *name) {
@@ -34,6 +36,7 @@ int Context::GetIndexOfGlobal(char *name) {
     }
     
     // TODO: Figure out what a invalid return value should be
+	assert(false);
 }
 
 bool Context::GlobalDeclared(char *name) {
@@ -187,7 +190,7 @@ Node* FindGlobals(Context *context, Node *nodes) {
             n->type = NODE_ASSIGNMENT;
             char *name = n->vardeclassign.name;
             Node *expr = n->vardeclassign.expr;
-            char *type = n->vardeclassign.type;
+            Type type = n->vardeclassign.type;
 
             n->assignment.name = name;
             n->assignment.expr = expr;
@@ -195,7 +198,7 @@ Node* FindGlobals(Context *context, Node *nodes) {
             Variable *var = new Variable();
             var->node = new Node();
             var->node->type = NODE_VARDECL;
-            var->node->vardecl.name = name;
+			var->node->vardecl.name = name;
             var->node->vardecl.type = type;
             var->node->next = NULL;
             var->node->prev = NULL;
@@ -217,8 +220,33 @@ Node* FindGlobals(Context *context, Node *nodes) {
     return first_not_removed;
 }
 
-void Context::TypeCheck() {
-    
+Type Context::GetExprType(Node *expr) {
+
+
+
+	return {TYPE_UNKNOWN, NULL};
+}
+
+void Context::TypeCheck(Node *nodes) {
+    // TEMP RETURN
+	return;
+
+	// Check all global space nodes
+	Node *n = nodes;
+	while (n != NULL) {
+		if (n->type == NODE_ASSIGNMENT) {
+			// For this to work we need a way to tell
+			// the type of an expr.
+		}
+		else if (n->type == NODE_FUNCCALL) {
+			// Get the Function form the context
+			// then check if all arguments meet the type
+			// requirement
+		}
+	}
+
+	// Check nodes for all function blocks
+	// Do the above, but for each Function
 }
 
 void Context::Analyse(Node *nodes) {
@@ -241,7 +269,7 @@ void Context::Analyse(Node *nodes) {
     printf("globals: %d\n", num_globals);
     
     // TODO: Type-checking
-    TypeCheck();
+    TypeCheck(nodes);
     
     // Nodes might point to something actually removed
     // to fix this, make FindFunctions and FindGlobals

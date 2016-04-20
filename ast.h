@@ -50,6 +50,19 @@ enum IfType {
     IF_ELSE,
 };
 
+enum TypeType {
+	TYPE_UNKNOWN = -1,
+	TYPE_INTEGER = 0,
+	TYPE_FLOAT,
+	TYPE_STRING,
+	TYPE_STRUCT,
+};
+
+struct Type {
+	TypeType type;
+	char *struct_name;
+};
+
 struct Node {
     NodeType type;
     Node *prev;
@@ -70,7 +83,7 @@ struct Node {
         } funccall;
         struct {
             char *name;
-            char *type;
+			Type type;
         } vardecl;
         struct {
             char *name;
@@ -78,7 +91,7 @@ struct Node {
         } assignment;
         struct {
             char *name;
-            char *type;
+			Type type;
             Node *expr;
         } vardeclassign;
         struct {

@@ -2,10 +2,14 @@
 #onearg: 1234;
 #hello: "Test!", 360*32, 240, some_var;
 
-var test: Integer;
+# declare variable of struct
+# var test: struct SomeStruct;
+# instead of var struct test: SomeStruct;
+
+var test: int;
 test = 4*2;
 
-var c:Integer = 32 * 45;
+var c:int = 32 * 45;
 
 # Would store the name print, and the number of arguments
 # the bytecode generated should look something like
@@ -24,8 +28,8 @@ var c:Integer = 32 * 45;
 # cfunction println;
 # cfunction native_add Integer a, Integer b;
 
-function add Integer a, Integer b:
-	var local: Integer = 1024*256;
+function add int a, int b:
+	var local: int = 1024*256;
 	
 	# Does not works since the bytecode expression writer
 	# doesnt yet support variables
@@ -39,6 +43,6 @@ add: 11, 14;
 # Guessing its storing int the wrong location
 #add: 11, 14;
 
-var k: Integer = 12*666/2;
+var k: int = 12*666/2;
 
 return 4 - 5;
