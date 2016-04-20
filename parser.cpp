@@ -545,6 +545,8 @@ Node* Parser::Ident() {
 
 Node* Parser::If() {
     // This should handle if, elif, and else
+
+	return NULL;
 }
 
 Node* Parser::Return() {

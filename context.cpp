@@ -169,8 +169,10 @@ Node* FindGlobals(Context *context, Node *nodes) {
         printf("node type: %d\n", n->type);
         
         if(n->type == NODE_VARDECL) {
-            if(n->prev != NULL) n->prev->next = n->next;
-            if(n->next != NULL) n->next->prev = n->prev;
+			if (n->prev != NULL) n->prev->next = n->next;
+			else n->next->prev = NULL;
+			if (n->next != NULL) n->next->prev = n->prev;
+			else n->prev->next = NULL;
                 
             Variable *var = new Variable();
             var->node = n;
@@ -186,6 +188,7 @@ Node* FindGlobals(Context *context, Node *nodes) {
             char *name = n->vardeclassign.name;
             Node *expr = n->vardeclassign.expr;
             char *type = n->vardeclassign.type;
+
             n->assignment.name = name;
             n->assignment.expr = expr;
                 
@@ -204,9 +207,7 @@ Node* FindGlobals(Context *context, Node *nodes) {
             if(first_not_removed == NULL) {
                 first_not_removed = n;
             }
-        }
-        
-        if(first_not_removed == NULL) {
+        }else if(first_not_removed == NULL) {
             first_not_removed = n;
         }
         
