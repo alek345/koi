@@ -1,3 +1,8 @@
+# TODO:
+#	In bytecode.cpp when cleaning up the stack in a function return call
+#	this only has to be done when there acutally is more than 0 args
+
+
 # declare variable of struct
 # var test: struct SomeStruct;
 # instead of var struct test: SomeStruct;
@@ -34,6 +39,11 @@ func add|a: int, b: int| {
 
 add|11, 14|;
 add|11, 14|;
+
+func hello|| {
+	
+}
+hello||;
 
 var k:int = 12*666/2;
 

@@ -365,7 +365,7 @@ Node* Parser::FunctionDef() {
     Node *stmts = Stmt();
     
     if(stmts == NULL) {
-		if (lexer->Next()->type != TOKEN_RIGHTBRACKET) {
+		if (lexer->Current()->type != TOKEN_RIGHTBRACKET) {
 			Error(lexer->Current(), "Expected '}' at the end of a function, got '%s'!", token_type_to_string(lexer->Current()->type));
 		}
 		lexer->Next();
