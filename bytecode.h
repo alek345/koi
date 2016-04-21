@@ -32,8 +32,10 @@ enum Operand {
     OP_LOAD,
     OP_STORE,
     OP_GSTORE,
+	OP_GLOAD,
 };
 
+// I don't know if this behavior is specified
 union conversion {
     float floatVal;
     uint32_t intVal;
@@ -86,10 +88,19 @@ struct VirtualMachine {
     
     VirtualMachine(uint32_t *code, uint32_t code_size, uint32_t data_size);
     VirtualMachine(BytecodeBuilder *builder);
+	
+	// Read in and load a .koic file.
+	// VirtualMachine(const char *path);
     
+	void PrintData();
+
     // Retuns the value at the top of the stack at the end
     // of execution
     int32_t Run(bool trace);
+
+	// Functions for easy VirtualMachine interaction
+	// void Push(uint32_t val);
+	// uint32_t Pop();
 };
 
 #endif /* BYTECODE_H */

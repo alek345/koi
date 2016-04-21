@@ -9,12 +9,8 @@ enum TokenType {
     TOKEN_LEFTPAR,
     TOKEN_RIGHTPAR,
     TOKEN_FUNCTION,
-    TOKEN_ENDFUNCTION,
     TOKEN_IF,
-    TOKEN_THEN,
-    TOKEN_ELIF,
     TOKEN_ELSE,
-    TOKEN_ENDIF,
     TOKEN_INTEGER,
     TOKEN_FLOAT,
     TOKEN_STRING,
@@ -29,6 +25,9 @@ enum TokenType {
     TOKEN_VAR,
     TOKEN_RETURN,
 	TOKEN_STRUCT,
+	TOKEN_PIPE,
+	TOKEN_LEFTBRACKET,
+	TOKEN_RIGHTBRACKET,
 };
 
 char *token_type_to_string(TokenType type);

@@ -42,7 +42,7 @@ void Parser::Error(Token *t, char *msg, ...) {
     vprintf(msg, args);
     va_end(args);
     printf("\n");
-    exit(-1);
+	exit(-1);
 }
 
 Parser::Parser(const char *path) {
@@ -314,31 +314,41 @@ Node* Parser::FunctionDef() {
     int num_arguments = 0;
     char **arguments = NULL;
     char **argument_types = NULL;
+
+	if (lexer->Next()->type != TOKEN_PIPE) {
+		Error(lexer->Current(), "Expected '|' !");
+	}
+
     Token *next = lexer->Next();
-    while(next->type != TOKEN_COLON) {
+    while(next->type != TOKEN_PIPE) {
         
         if(next->type == TOKEN_IDENT) {
             
-            num_arguments++;
-            argument_types = (char**) realloc(argument_types, sizeof(char*)*num_arguments);
-            argument_types[num_arguments-1] = next->strVal;
-            next = lexer->Next();
+			num_arguments++;
+			arguments = (char**)realloc(arguments, sizeof(char*)*num_arguments);
+			arguments[num_arguments - 1] = next->strVal;
             
+			next = lexer->Next();
+			if (next->type != TOKEN_COLON) {
+				Error(next, "Expected ':' after argument name!");
+			}
+
+			next = lexer->Next();
             if(next->type != TOKEN_IDENT) {
-                Error(next, "Expected argument name after type!");
+                Error(next, "Expected argument type after ':'!");
             }
-            
-            arguments = (char**) realloc(arguments, sizeof(char*)*num_arguments);
-            arguments[num_arguments-1] = next->strVal;
+
+			argument_types = (char**)realloc(argument_types, sizeof(char*)*num_arguments);
+			argument_types[num_arguments - 1] = next->strVal;
             
             next = lexer->Next();
-            if(next->type == TOKEN_COLON) {
+            if(next->type == TOKEN_PIPE) {
                 break;
             } else if(next->type == TOKEN_COMMA) {
                 next = lexer->Next();
                 continue;
             } else {
-                Error(next, "Expected ',' or ':'");
+                Error(next, "Expected ',' or '|'");
             }
             
             
@@ -347,12 +357,18 @@ Node* Parser::FunctionDef() {
         }
         
     }
-    lexer->Next(); // Consume colon
-    
+	if (lexer->Next()->type != TOKEN_LEFTBRACKET) {
+		Error(lexer->Current(), "Expected '{'!");
+	}
+	lexer->Next();
+
     Node *stmts = Stmt();
     
     if(stmts == NULL) {
-        lexer->Next(); // Consume endfunction
+		if (lexer->Next()->type != TOKEN_RIGHTBRACKET) {
+			Error(lexer->Current(), "Expected '}' at the end of a function, got '%s'!", token_type_to_string(lexer->Current()->type));
+		}
+		lexer->Next();
         
         Node *n = new Node();
         n->type = NODE_FUNCDEF;
@@ -361,6 +377,8 @@ Node* Parser::FunctionDef() {
         n->funcdef.arguments = arguments;
         n->funcdef.argument_types = argument_types;
         n->funcdef.stmts = stmts;
+		
+		return n;
     }
     
     Node *stmt = stmts;
@@ -373,7 +391,10 @@ Node* Parser::FunctionDef() {
         stmt = newstmt;
     }
     
-    lexer->Next(); // Consume endfunction
+	if (lexer->Current()->type != TOKEN_RIGHTBRACKET) {
+		Error(lexer->Current(), "Expected '}' at the end of a function, got '%s'!", token_type_to_string(lexer->Current()->type));
+	}
+	lexer->Next();
     
     Node *n = new Node();
     n->type = NODE_FUNCDEF;
@@ -534,11 +555,14 @@ Node* Parser::Ident() {
         n->assignment.expr = expr;
         return n;
         
-    } else if(next->type == TOKEN_COLON) {
+    } else if(next->type == TOKEN_PIPE) {
         
         Token *next = lexer->Next();
-        if(next->type == TOKEN_SEMICOLON) {
-            lexer->Next();
+        if(next->type == TOKEN_PIPE) {
+			if (lexer->Next()->type != TOKEN_SEMICOLON) {
+				Error(lexer->Current(), "Expected ';' at the end of function call!");
+			}
+			lexer->Next();
             
             Node *n = new Node();
             n->type = NODE_FUNCCALL;
@@ -549,18 +573,22 @@ Node* Parser::Ident() {
         }
         
         TokenList *list = new TokenList();
-        while(next->type != TOKEN_COMMA && next->type != TOKEN_SEMICOLON) {
+        while(next->type != TOKEN_COMMA && next->type != TOKEN_PIPE) {
             list->Add(next);
             next = lexer->Next();
         }
-        
+
         NodeList *nlist = new NodeList();
         Node *expr = Expr(list);
         nlist->Add(expr);
         delete list;
         
-        if(next->type == TOKEN_SEMICOLON) {
-            lexer->Next();
+        if(next->type == TOKEN_PIPE) {
+			next = lexer->Next();
+			if (next->type != TOKEN_SEMICOLON) {
+				Error(lexer->Current(), "Expected ';' at the end of function call!");
+			}
+			lexer->Next();
             
             Node *n = new Node();
             n->type = NODE_FUNCCALL;
@@ -573,10 +601,9 @@ Node* Parser::Ident() {
         Node *start = expr;
         
         while(next->type == TOKEN_COMMA) {
-            
             next = lexer->Next(); // Consume comma
             TokenList *list = new TokenList();
-            while(next->type != TOKEN_COMMA && next->type != TOKEN_SEMICOLON) {
+            while(next->type != TOKEN_COMMA && next->type != TOKEN_PIPE) {
                 list->Add(next);
                 next = lexer->Next();
             }
@@ -588,9 +615,13 @@ Node* Parser::Ident() {
             expr = newexpr;
             nlist->Add(newexpr);
             
-            if(next->type == TOKEN_SEMICOLON) {
-                lexer->Next();
-                
+            if(next->type == TOKEN_PIPE) {
+				next = lexer->Next();
+				if (next->type != TOKEN_SEMICOLON) {
+					Error(lexer->Current(), "Expected ';' at the end of function call!");
+				}
+				lexer->Next();
+
                 Node *n = new Node();
                 n->type = NODE_FUNCCALL;
                 n->funccall.name = name->strVal;
@@ -601,7 +632,7 @@ Node* Parser::Ident() {
         }
         
     } else {
-        Error(next, "Expected '=' or '(' after identifier!");
+        Error(next, "Expected '=' or '|' after identifier!");
     }
 }
 

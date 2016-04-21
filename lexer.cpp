@@ -24,12 +24,8 @@ char *token_type_to_string(TokenType type) {
         TOKEN(TOKEN_LEFTPAR);
         TOKEN(TOKEN_RIGHTPAR);
         TOKEN(TOKEN_FUNCTION);
-        TOKEN(TOKEN_ENDFUNCTION);
         TOKEN(TOKEN_IF);
-        TOKEN(TOKEN_THEN);
-        TOKEN(TOKEN_ELIF);
         TOKEN(TOKEN_ELSE);
-        TOKEN(TOKEN_ENDIF);
         TOKEN(TOKEN_INTEGER);
         TOKEN(TOKEN_FLOAT);
         TOKEN(TOKEN_STRING);
@@ -44,6 +40,9 @@ char *token_type_to_string(TokenType type) {
         TOKEN(TOKEN_VAR);
         TOKEN(TOKEN_RETURN);
 		TOKEN(TOKEN_STRUCT);
+		TOKEN(TOKEN_PIPE);
+		TOKEN(TOKEN_LEFTBRACKET);
+		TOKEN(TOKEN_RIGHTBRACKET);
 #undef TOKEN
     }
 }
@@ -161,6 +160,12 @@ void Lexer::Lex() {
             AddToken(make_basic_token(this, TOKEN_COLON));
             continue;
         }
+		if (*ptr == '|') {
+			ptr++;
+			line_offset++;
+			AddToken(make_basic_token(this, TOKEN_PIPE));
+			continue;
+		}
         if(*ptr == ';') {
             ptr++;
             line_offset++;
@@ -179,6 +184,18 @@ void Lexer::Lex() {
             AddToken(make_basic_token(this, TOKEN_RIGHTPAR));
             continue;
         }
+		if (*ptr == '{') {
+			ptr++;
+			line_offset++;
+			AddToken(make_basic_token(this, TOKEN_LEFTBRACKET));
+			continue;
+		}
+		if (*ptr == '}') {
+			ptr++;
+			line_offset++;
+			AddToken(make_basic_token(this, TOKEN_RIGHTBRACKET));
+			continue;
+		}
         if(*ptr == '+') {
             ptr++;
             line_offset++;
@@ -340,13 +357,9 @@ void Lexer::Lex() {
         
         if(t->type == TOKEN_IDENT) {
 #define KEYWORD(s, toktype) if(strcmp(s, t->strVal) == 0) { t->type = toktype; free(t->strVal); continue; }
-            KEYWORD("function", TOKEN_FUNCTION);
-            KEYWORD("endfunction", TOKEN_ENDFUNCTION);
+            KEYWORD("func", TOKEN_FUNCTION);
             KEYWORD("if", TOKEN_IF);
-            KEYWORD("then", TOKEN_THEN);
-            KEYWORD("elif", TOKEN_ELIF);
             KEYWORD("else", TOKEN_ELSE);
-            KEYWORD("endif", TOKEN_ENDIF);
             KEYWORD("var", TOKEN_VAR);
             KEYWORD("return", TOKEN_RETURN);
 			KEYWORD("struct", TOKEN_STRUCT);

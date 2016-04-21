@@ -209,6 +209,11 @@ void gstore(VirtualMachine *vm) {
     vm->data[val] = vm->stack[vm->sp--];
 }
 
+void gload(VirtualMachine *vm) {
+	int32_t val = vm->code[vm->ip++];
+	vm->stack[++vm->sp] = vm->data[val];
+}
+
 char *op_to_string(Operand op) {
     switch(op) {
 #define OP(op) case op: { return #op ;}
@@ -239,6 +244,7 @@ char *op_to_string(Operand op) {
         OP(OP_LOAD);
         OP(OP_STORE);
         OP(OP_GSTORE);
+		OP(OP_GLOAD);
 #undef OP
     }
     
@@ -265,6 +271,17 @@ VirtualMachine::VirtualMachine(BytecodeBuilder *builder)
 : VirtualMachine(builder->code, builder->code_size, builder->data_size)
 {
     ip = builder->start_ip;
+};
+
+void VirtualMachine::PrintData() {
+
+	for (int i = 0; i < data_size; i++) {
+
+		conversion c;
+		c.intVal = data[i];
+		printf("gvar[%d]: %d/%f\n", i, c.sintVal, c.floatVal);
+	}
+
 }
 
 static vmFunc ops[] = {
@@ -303,6 +320,7 @@ static vmFunc ops[] = {
     store,
     
     gstore,
+	gload,
 };
 
 int32_t VirtualMachine::Run(bool trace) {
@@ -414,8 +432,8 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
 				// Then check for the variable in local space
 				// then in global space
 
-                //Add(OP_CONST);
-                //Add(999);
+                Add(OP_CONST);
+                Add(999);
                 return;
                 
             } break;
@@ -460,13 +478,23 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
 }
 
 void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
-    
     Node *n = function->node->funcdef.stmts;
     while(n != NULL) {
         
         switch(n->type) {
             case NODE_RETURN: {
                 GenerateExpr(context, n->ret.expr);
+
+				Add(OP_GSTORE);
+				Add(0); // Reserved global variable
+
+				for (int i = 0; i < function->num_locals; i++) {
+					Add(OP_POP);
+				}
+
+				Add(OP_GLOAD);
+				Add(0);
+
                 Add(OP_RET);
             } break;
             
@@ -569,10 +597,25 @@ void BytecodeBuilder::Generate(Context *context) {
     for(int i = 0; i < context->num_functions; i++) {
         Function *func = context->functions[i];
         func->code_offset = this->code_size;
-        
+
+		for (int i = 0; i < func->num_locals; i++) {
+			Add(OP_CONST);
+			Add(0);
+		}
+
         // Generate bytecode for the function nodes
         GenerateFunction(context, func);
-        
+
+		Add(OP_GSTORE);
+		Add(0); // Reserved global variable
+
+		for (int i = 0; i < func->num_locals; i++) {
+			Add(OP_POP);
+		}
+
+		Add(OP_GLOAD);
+		Add(0);
+
         // Always add a return at the end
         Add(OP_RET);
     }

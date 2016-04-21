@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
         n = n->next;
     }
     
-    Context *context = new Context();
+	Context *context = new Context();
     context->Analyse(nodes);
     
     BytecodeBuilder builder;
@@ -162,5 +162,8 @@ int main(int argc, char **argv) {
         ret_code, *((float*)&ret_code)
     );
     
+	printf("\nGlobals:\n");
+	vm.PrintData();
+
     return 0;
 }

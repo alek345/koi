@@ -1,7 +1,3 @@
-#noargs: ;
-#onearg: 1234;
-#hello: "Test!", 360*32, 240, some_var;
-
 # declare variable of struct
 # var test: struct SomeStruct;
 # instead of var struct test: SomeStruct;
@@ -28,21 +24,20 @@ var c:int = 32 * 45;
 # cfunction println;
 # cfunction native_add Integer a, Integer b;
 
-function add int a, int b:
+func add|a: int, b: int| {
 	var local: int = 1024*256;
 	
 	# Does not works since the bytecode expression writer
 	# doesnt yet support variables
 	return local;
-endfunction
+}
 
-add: 11, 14;
+add|11, 14|;
+add|11, 14|;
 
-# Calling this twice doesn't work. Probably has something to do with
-# the stack
-# Guessing its storing int the wrong location
-#add: 11, 14;
+var k:int = 12*666/2;
 
-var k: int = 12*666/2;
-
+# change this into a OP_GRET
+# a OP_GRET is basically a halt
+# assumes theres a value on the stack
 return 4 - 5;

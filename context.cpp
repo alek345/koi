@@ -30,6 +30,7 @@ int Function::GetIndexOfLocal(char *name) {
 int Context::GetIndexOfGlobal(char *name) {
     for(int i = 0; i < num_globals; i++) {
         Variable *var = global_variables[i];
+		if (var == NULL) continue;
         if(strcmp(var->node->vardecl.name, name) == 0) {
             return i;
         }
@@ -162,8 +163,8 @@ Node* FindFunctions(Context *context, Node *nodes) {
 }
 
 Node* FindGlobals(Context *context, Node *nodes) {
-    context->global_variables = NULL;
-    context->num_globals = 0;
+    //context->global_variables = NULL;
+    //context->num_globals = 0;
     
     Node *first_not_removed = NULL;
     
@@ -262,6 +263,18 @@ void Context::Analyse(Node *nodes) {
     
     // TODO: Semantic analysis inside the function
     // Check things like function call
+
+	num_globals = 0;
+	// "System" globals
+	// here we can reserve global if we need some
+	// global variabels that will always be there
+	// #1 - Used for cleaning up stack
+	num_globals++;
+
+	global_variables = (Variable**) malloc(sizeof(Variable*) * num_globals);
+	for (int i = 0; i < num_globals; i++) {
+		global_variables[i] = NULL;
+	}
 
     // Take out all global declerations
     // but keep assignments
