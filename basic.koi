@@ -1,6 +1,12 @@
 # TODO:
-#	In bytecode.cpp when cleaning up the stack in a function return call
-#	this only has to be done when there acutally is more than 0 args
+#	- In bytecode.cpp when cleaning up the stack in a function return call
+#	  this only has to be done when there acutally is more than 0 args
+#	- Complete the expression type finder and complete all types of type checking
+#	- Use /\ to generate the proper math op
+#
+# TODO_SOME_TIME_IN_THE_FUTURE:
+#	- Implement structs
+#	- Standardize types? ie. int is a keyword?
 
 
 # declare variable of struct
