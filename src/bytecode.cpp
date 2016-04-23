@@ -394,7 +394,7 @@ void BytecodeBuilder::Write(const char *path) {
     fclose(f);
 }
 
-void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
+void BytecodeBuilder::GenerateExpr(Context *context, Function *function, Node *ast) {
     
     Node *n = ast;
     while(n != NULL) {
@@ -432,8 +432,41 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
 				// Then check for the variable in local space
 				// then in global space
 
-                Add(OP_CONST);
-                Add(999);
+				if(function) {
+					// We are in a function scope
+					if(function->Declared(n->variable.name)) {
+						int offset = function->GetIndexOfLocal(n->variable.name);
+
+						Add(OP_LOAD);
+						conversion c;
+						c.sintVal = offset;
+						Add(c.intVal);
+					} else {
+						// Function is not local, maybe global?
+						if(context->GlobalDeclared(n->variable.name)) {
+							int offset = context->GetIndexOfGlobal(n->variable.name);
+							Add(OP_GLOAD);
+							conversion c;
+							c.sintVal = offset;
+							Add(c.intVal);
+						} else {
+							assert(!"Variable is not declared!");
+						}
+					}
+				} else {
+					// We are in global space
+					
+					if(context->GlobalDeclared(n->variable.name)) {
+						int offset = context->GetIndexOfGlobal(n->variable.name);
+						Add(OP_GLOAD);
+						conversion c;
+						c.sintVal = offset;
+						Add(c.intVal);
+					} else {
+						assert(!"Variable is not declared!");
+					}
+				}
+
                 return;
                 
             } break;
@@ -445,26 +478,26 @@ void BytecodeBuilder::GenerateExpr(Context *context, Node *ast) {
                 // for now everything is an int
                 switch(n->binop.type) {
                     case BINOP_ADD: {
-                        GenerateExpr(context, n->binop.rhs);
-                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, function, n->binop.rhs);
+                        GenerateExpr(context, function, n->binop.lhs);
                         Add(OP_IIADD);
                     } break;
                     
                     case BINOP_SUB: {
-                        GenerateExpr(context, n->binop.rhs);
-                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, function, n->binop.rhs);
+                        GenerateExpr(context, function, n->binop.lhs);
                         Add(OP_IISUB);
                     } break;
                     
                     case BINOP_MUL: {
-                        GenerateExpr(context, n->binop.rhs);
-                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, function, n->binop.rhs);
+                        GenerateExpr(context, function, n->binop.lhs);
                         Add(OP_IIMUL);
                     } break;
                     
                     case BINOP_DIV: {
-                        GenerateExpr(context, n->binop.rhs);
-                        GenerateExpr(context, n->binop.lhs);
+                        GenerateExpr(context, function, n->binop.rhs);
+                        GenerateExpr(context, function, n->binop.lhs);
                         Add(OP_IIDIV);
                     } break;
                 }
@@ -483,7 +516,7 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
         
         switch(n->type) {
             case NODE_RETURN: {
-                GenerateExpr(context, n->ret.expr);
+                GenerateExpr(context, function, n->ret.expr);
 
 				Add(OP_GSTORE);
 				Add(0); // Reserved global variable
@@ -500,7 +533,7 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
             
             case NODE_ASSIGNMENT: {
                 // This may be a argument
-                GenerateExpr(context, n->assignment.expr);
+                GenerateExpr(context, function, n->assignment.expr);
                 
                 // Check if the variable is declared
                 // if not check global variables
@@ -522,7 +555,7 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
                 // TODO: Check if argument count and types are correct
                 
                 for(int i = 0; i < n->funccall.num_arguments; i++) {
-                    GenerateExpr(context, n->funccall.arguments[i]);
+                    GenerateExpr(context, function, n->funccall.arguments[i]);
                 }
                 
                 Add(OP_CALL);
@@ -546,7 +579,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
     switch(n->type) {
         
         case NODE_RETURN: {
-            GenerateExpr(context, n->ret.expr);
+            GenerateExpr(context, NULL, n->ret.expr);
             // When in global scope we halt the program
             // instead of a op_ret
             Add(OP_HALT);
@@ -555,7 +588,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
             
         case NODE_ASSIGNMENT: {
             // This may be a argument
-            GenerateExpr(context, n->assignment.expr);
+            GenerateExpr(context, NULL, n->assignment.expr);
             
             int index = context->GetIndexOfGlobal(n->assignment.name);
             Add(OP_GSTORE);
@@ -573,7 +606,7 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
             // TODO: Check if argument count and types are correct
             
             for(int i = 0; i < n->funccall.num_arguments; i++) {
-                GenerateExpr(context, n->funccall.arguments[i]);
+                GenerateExpr(context, NULL, n->funccall.arguments[i]);
             }
                 
             Add(OP_CALL);

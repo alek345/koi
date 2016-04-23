@@ -68,7 +68,7 @@ struct BytecodeBuilder {
     
     void Write(const char *path);
     
-    void GenerateExpr(Context *context, Node *ast);
+    void GenerateExpr(Context *context, Function *function, Node *ast);
     void Generate(Context *context, Node *node);
     void Generate(Context *context);
     void GenerateFunction(Context *context, Function *function);

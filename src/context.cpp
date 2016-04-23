@@ -5,7 +5,16 @@
 #include <assert.h>
 
 bool Function::Declared(char *name) {
-    for(int i = 0; i < num_locals; i++) {
+	int num_args = node->funcdef.num_arguments;
+	char **arguments = node->funcdef.arguments;
+
+	for(int i = 0; i < num_args; i++) {
+		if(strcmp(arguments[i], name) == 0) {
+			return true;
+		}
+	}
+
+	for(int i = 0; i < num_locals; i++) {
         Variable *var = local_variables[i];
         if(strcmp(var->node->vardecl.name, name) == 0) {
             return true;
@@ -16,7 +25,16 @@ bool Function::Declared(char *name) {
 }
 
 int Function::GetIndexOfLocal(char *name) {
-    for(int i = 0; i < num_locals; i++) {
+	int num_args = node->funcdef.num_arguments;
+	char **arguments = node->funcdef.arguments;
+
+	for(int i = 0; i < num_args; i++) {
+		if(strcmp(arguments[i], name) == 0) {
+			return (-3) - i;
+		}
+	}
+	
+	for(int i = 0; i < num_locals; i++) {
         Variable *var = local_variables[i];
         if(strcmp(var->node->vardecl.name, name) == 0) {
             return i+1;
@@ -43,6 +61,7 @@ int Context::GetIndexOfGlobal(char *name) {
 bool Context::GlobalDeclared(char *name) {
     for(int i = 0; i < num_globals; i++) {
         Variable *var = global_variables[i];
+		if(var == NULL) continue;
         if(strcmp(var->node->vardecl.name, name) == 0) {
             return true;
         }

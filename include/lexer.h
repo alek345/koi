@@ -28,10 +28,14 @@ enum TokenType {
 	TOKEN_PIPE,
 	TOKEN_LEFTBRACKET,
 	TOKEN_RIGHTBRACKET,
+
+	// Used by expression parser
+	TOKEN_FUNCCALL,
 };
 
 const char *token_type_to_string(TokenType type);
 
+struct TokenList;
 struct Token {
     TokenType type;
     int line_number = 0;
@@ -42,6 +46,12 @@ struct Token {
         float floatVal;
         char *strVal;
     };
+
+	// Used by expression parser
+	struct {
+		int num_arguments;
+		TokenList** arguments;
+	} funccall;
 };
 
 

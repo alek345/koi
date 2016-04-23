@@ -124,6 +124,8 @@ bool is_operator(Token *t) {
 }
 
 Node* Parser::Expr(TokenList *tokens) {
+	tokens->Add(TOKEN_END);
+
     Stack<Token*> opStack;
     Stack<Token*> output;
     
@@ -139,8 +141,34 @@ Node* Parser::Expr(TokenList *tokens) {
         }
         
         if(t->type == TOKEN_IDENT) {
-            // Can be a function call if succeeded by ':'
-            output.Push(t);
+            // Can be a function call if succeeded by '|'
+			if(tokens->tokens[i+1]->type == TOKEN_PIPE) {
+				Token *call = t;
+				t->type = TOKEN_FUNCCALL;
+				
+				i+=2;
+
+				Token *mt = tokens->tokens[i];
+				if(mt->type == TOKEN_END) {
+					Error(mt, "Unexpected end of file!");
+				}
+
+				if(mt->type == TOKEN_PIPE) {
+					// No arguments;
+					t->funccall.num_arguments = 0;
+					t->funccall.arguments = NULL;
+					output.Push(t);
+					continue;
+				}
+				
+				while(mt->type != TOKEN_COMMA && mt->type != TOKEN_PIPE) {
+					
+				}
+
+			} else {
+				output.Push(t);
+			}
+
             continue;
         }
         

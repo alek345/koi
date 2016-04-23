@@ -1,0 +1,7 @@
+var a:int = 32;
+
+func hello|a:int|{
+	return a * a;
+}
+
+hello|16|;
