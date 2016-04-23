@@ -13,4 +13,6 @@ add_executable(
 	src/context.cpp
 )
 
+install(TARGETS koi DESTINATION bin)
+
 include_directories(include)
