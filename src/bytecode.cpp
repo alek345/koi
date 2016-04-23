@@ -201,7 +201,7 @@ void load(VirtualMachine *vm) {
 
 void store(VirtualMachine *vm) {
     int32_t val = (int32_t) vm->code[vm->ip++];
-    vm->code[vm->fp + val] = vm->stack[vm->sp--];
+    vm->stack[vm->fp + val] = vm->stack[vm->sp--];
 }
 
 void gstore(VirtualMachine *vm) {

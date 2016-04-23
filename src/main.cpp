@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "bytecode.h"
 #include "context.h"
+#include "cbuilder.h"
 
 void print_indents(int length) {
     for(int i = 0; i < length; i++) {
@@ -164,6 +165,9 @@ int main(int argc, char **argv) {
     
 	printf("\nGlobals:\n");
 	vm.PrintData();
+
+	CBuilder cbuilder(&builder);
+	cbuilder.Write("output.c");
 
     return 0;
 }

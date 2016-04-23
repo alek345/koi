@@ -11,6 +11,7 @@ add_executable(
 	src/parser.cpp
 	src/bytecode.cpp
 	src/context.cpp
+	src/cbuilder.cpp
 )
 
 install(TARGETS koi DESTINATION bin)

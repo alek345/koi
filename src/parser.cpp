@@ -124,7 +124,7 @@ bool is_operator(Token *t) {
 }
 
 Node* Parser::Expr(TokenList *tokens) {
-	tokens->Add(TOKEN_END);
+	//tokens->Add(TOKEN_END);
 
     Stack<Token*> opStack;
     Stack<Token*> output;
@@ -142,6 +142,7 @@ Node* Parser::Expr(TokenList *tokens) {
         
         if(t->type == TOKEN_IDENT) {
             // Can be a function call if succeeded by '|'
+			/*
 			if(tokens->tokens[i+1]->type == TOKEN_PIPE) {
 				Token *call = t;
 				t->type = TOKEN_FUNCCALL;
@@ -165,9 +166,9 @@ Node* Parser::Expr(TokenList *tokens) {
 					
 				}
 
-			} else {
+			} else {*/
 				output.Push(t);
-			}
+			//}
 
             continue;
         }
