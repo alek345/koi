@@ -55,6 +55,6 @@ hello||;
 var k:int = 12*666/2;
 
 # change this into a OP_GRET
-# a OP_GRET is basically a halt
+# a OP_GRET is basically a halt.
 # assumes theres a value on the stack
 return 4 - 5;
