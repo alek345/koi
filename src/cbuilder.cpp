@@ -1,5 +1,6 @@
 #include "cbuilder.h"
 #include <assert.h>
+#include <stdlib.h>
 
 CBuilder::CBuilder(BytecodeBuilder *builder) {
 	this->builder = builder;
@@ -106,7 +107,7 @@ void call(CBuilder *b) {
 
 void ret(CBuilder *b) {
 	fprintf(b->f, "retval = stack[sp--]; sp = fp; ip = stack[sp--]; fp = stack[sp--]; nargs = stack[sp--];");
-	fprintf(b->f, "sp -= nargs; stack[++sp] = retval; goto ip_label(ip);\n");
+	fprintf(b->f, "sp -= nargs; stack[++sp] = retval; goto *jump_table[ip+1];\n");
 }
 
 void load(CBuilder *b) {
@@ -172,7 +173,6 @@ const char *boiler_top =
 "int retval;\n"
 "uint32_t ip;\n"
 "int nargs;\n"
-"#define ip_label(lab) l ## #lab\n"
 ;
 
 void CBuilder::Write(const char *path) {
@@ -187,11 +187,24 @@ void CBuilder::Write(const char *path) {
 	fprintf(f, "uint32_t data[%d];\n", builder->data_size);
 
 	fprintf(f, "int main(int argc, char **argv) {\n");
+	
+	fprintf(f, "void *jump_table[%d] = {};\n", builder->code_size);
+	fprintf(f, "goto jump_table_setup;\n");
+	fprintf(f, "jump_table_done:\n");
+
 	fprintf(f, "goto l%d;\n", builder->start_ip);
+
+	int num_labels = 0;
+	int *labels = NULL;
 
 	uint32_t opcode = builder->code[0];
 	for(offset = 0; offset < builder->code_size;) {
 		fprintf(f, "l%d: ", offset);
+
+		num_labels++;
+		labels = (int*) realloc(labels, sizeof(int)*num_labels);
+		labels[num_labels-1]= offset;
+
 		offset++;
 
 		printf("code[%d]= %d;\n", offset, builder->code[offset]);
@@ -200,6 +213,16 @@ void CBuilder::Write(const char *path) {
 
 		opcode = builder->code[offset];
 	}
+	
+	fprintf(f, "goto end;\n");
+	fprintf(f, "jump_table_setup:\n");
+
+	for(int i = 0; i < num_labels; i++) {
+		fprintf(f, "jump_table[%d] = &&l%d;\n", labels[i], labels[i]);
+	}
+
+	fprintf(f, "goto jump_table_done;\n");
+
 	fprintf(f, "end: if(sp>=0) printf(\"ret: %%d\\n\", stack[sp]);\n");
 	fprintf(f, "}\n");
 

@@ -1,6 +1,6 @@
 var a:int = 32;
 
-func hello|a:int|{
+func hello|a:int| {
 	return a * a;
 }
 
