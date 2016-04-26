@@ -42,14 +42,6 @@ enum UnaryType {
     UNARY_MINUS,
 };
 
-enum IfType {
-    IF_IF = 0,
-    IF_IFELSE,
-    IF_ELIF,
-    IF_ELIFELSE,
-    IF_ELSE,
-};
-
 enum TypeType {
 	TYPE_UNKNOWN = -1,
 	TYPE_INTEGER = 0,
@@ -114,10 +106,9 @@ struct Node {
             Node *stmts;
         } funcdef;
         struct {
-            IfType type;
             Node *condition;
             Node *stmts;
-            Node *next;
+            Node *elsestmt;
         } ifstmt;
         struct {
             BooleanOpType type;

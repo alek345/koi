@@ -11,6 +11,7 @@ enum TokenType {
     TOKEN_FUNCTION,
     TOKEN_IF,
     TOKEN_ELSE,
+	TOKEN_ENDIF,
     TOKEN_INTEGER,
     TOKEN_FLOAT,
     TOKEN_STRING,

@@ -188,5 +188,7 @@ int main(int argc, char **argv) {
 	CBuilder cbuilder(&builder);
 	cbuilder.Write("output.c");
 
+	system("gcc -g output.c -o cbuild");
+
     return 0;
 }

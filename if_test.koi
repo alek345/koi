@@ -1,0 +1,7 @@
+var a: int = 1;
+
+if a { 
+	return a+1;
+} endif
+
+return a-1;

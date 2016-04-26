@@ -64,7 +64,7 @@ struct BytecodeBuilder {
     
     BytecodeBuilder();
     
-    void Add(uint32_t val);
+	uint32_t Add(uint32_t val);
     
     void Write(const char *path);
     

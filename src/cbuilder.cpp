@@ -207,8 +207,8 @@ void CBuilder::Write(const char *path) {
 
 		offset++;
 
-		printf("code[%d]= %d;\n", offset, builder->code[offset]);
-		printf("op: %s\n", op_to_string((Operand)opcode));
+//		printf("code[%d]= %d;\n", offset, builder->code[offset]);
+//		printf("op: %s\n", op_to_string((Operand)opcode));
 		ops[opcode](this);
 
 		opcode = builder->code[offset];
