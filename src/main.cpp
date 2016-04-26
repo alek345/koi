@@ -23,8 +23,10 @@ void print_node(Node *n) {
     switch(n->type) {
         case NODE_RETURN: {
             print_indents(indent_size);
-            printf("Return\nExpr:\n");
-            indent_size++;
+            printf("Return\n");
+			print_indents(indent_size);
+			printf("Expr: \n");
+			indent_size++;
             print_node(n->ret.expr);
             indent_size--;
         } break;
@@ -84,10 +86,17 @@ void print_node(Node *n) {
 			indent_size++;
 			print_node(n->ifstmt.condition);
 			indent_size--;
+			print_indents(indent_size);
 			printf("stmts:\n");
 			indent_size++;
-			print_node(n->ifstmt.stmts);
+            Node *nn = n->ifstmt.stmts;
+            while(nn != NULL) {
+                print_node(nn);
+                nn = nn->next;
+            }
 			indent_size--;
+			print_indents(indent_size);
+			printf("end of if stmts\n");
 		} break;
 
         case NODE_VARIABLE: {
@@ -109,14 +118,16 @@ void print_node(Node *n) {
         } break;
         
         case NODE_ASSIGNMENT: {
-            printf("Assignment: %s\nExpr:\n", n->assignment.name);
+            print_indents(indent_size);
+			printf("Assignment: %s\nExpr:\n", n->assignment.name);
             indent_size++;
             print_node(n->assignment.expr);
             indent_size--;
         } break;
         
         case NODE_FUNCCALL: {
-            printf("Funccall: %s\nArguments (%d):\n", 
+            print_indents(indent_size);
+			printf("Funccall: %s\nArguments (%d):\n", 
                 n->funccall.name, n->funccall.num_arguments);
             for(int i = 0; i < n->funccall.num_arguments; i++) {
                 printf("Arg %d\nExpr:\n", i+1);
@@ -127,12 +138,14 @@ void print_node(Node *n) {
         } break;
         
         case NODE_FUNCDEF: {
+			print_indents(indent_size);
             printf("Funcdef: %s\nArguments (%d):\n", 
                 n->funcdef.name, n->funcdef.num_arguments);
             for(int i = 0; i < n->funcdef.num_arguments; i++) {
                 printf("Arg %d: %s\n", i+1, n->funcdef.arguments[i]);
             }
-            printf("Body:\n");
+            print_indents(indent_size);
+			printf("Body:\n");
             indent_size++;
             Node *nn = n->funcdef.stmts;
             while(nn != NULL) {

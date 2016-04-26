@@ -691,16 +691,16 @@ Node* Parser::If() {
 
 	if(stmts == NULL) {
 		// TODO: Expect the correct tokens such as } and endif or else
-		next = lexer->Next();
+		next = lexer->Current();
 		if(next->type != TOKEN_RIGHTBRACKET){
 			Error(next, "Expected '}' after if statement, got '%s'!", token_type_to_string(next->type));
 		}
 
 		next = lexer->Next();
 		if(next->type == TOKEN_ENDIF) {
-			
+			assert(!"not done"); // FIXME	
 		} else if(next->type == TOKEN_ELSE) {
-
+			assert(!"not done"); // FIXME
 		}  else {
 			Error(next, "Expected 'else' or 'endif'\n");
 		}
@@ -733,6 +733,8 @@ Node* Parser::If() {
 	next = lexer->Next();
 	if(next->type == TOKEN_ENDIF) {
 		lexer->Next();
+
+		printf("token after endif: %s\n", token_type_to_string(lexer->Current()->type));
 
 		Node *ifn = new Node();
 		ifn->type = NODE_IF;

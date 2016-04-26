@@ -44,7 +44,7 @@ union conversion {
 
 #define STACK_SIZE 4096
 
-char *op_to_string(Operand op);
+const char *op_to_string(Operand op);
 
 struct BytecodeBuilder {
     uint32_t *code;
@@ -67,9 +67,10 @@ struct BytecodeBuilder {
 	uint32_t Add(uint32_t val);
     
     void Write(const char *path);
-    
+   	
+	void GenerateStmt(Context *context, Function *function, Node *ast);
     void GenerateExpr(Context *context, Function *function, Node *ast);
-    void Generate(Context *context, Node *node);
+//    void Generate(Context *context, Node *node);
     void Generate(Context *context);
     void GenerateFunction(Context *context, Function *function);
 };

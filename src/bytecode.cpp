@@ -214,7 +214,7 @@ void gload(VirtualMachine *vm) {
 	vm->stack[++vm->sp] = vm->data[val];
 }
 
-char *op_to_string(Operand op) {
+const char *op_to_string(Operand op) {
     switch(op) {
 #define OP(op) case op: { return #op ;}
         OP(OP_HALT);
@@ -514,13 +514,16 @@ void BytecodeBuilder::GenerateExpr(Context *context, Function *function, Node *a
     
 }
 
-void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
-    Node *n = function->node->funcdef.stmts;
-    while(n != NULL) {
-        
-        switch(n->type) {
-            case NODE_RETURN: {
-                GenerateExpr(context, function, n->ret.expr);
+void BytecodeBuilder::GenerateStmt(
+		Context *context,
+		Function *function,
+		Node *stmt
+) {
+	Node *n = stmt;
+	switch(n->type) {
+		 case NODE_RETURN: {	
+			if(function) {
+				GenerateExpr(context, function, n->ret.expr);
 
 				Add(OP_GSTORE);
 				Add(0); // Reserved global variable
@@ -530,128 +533,112 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
 				}
 
 				Add(OP_GLOAD);
-				Add(0);
+				Add(0); // Reserved global variable
 
-                Add(OP_RET);
-            } break;
+				Add(OP_RET);
+			} else {
+				GenerateExpr(context, NULL, n->ret.expr);
+				// When in global scope we halt the program
+				// instead of a op_ret
+				Add(OP_HALT);
+			}
+       	} break;
             
-            case NODE_ASSIGNMENT: {
-                // This may be a argument
-                GenerateExpr(context, function, n->assignment.expr);
-                
-                // Check if the variable is declared
-                // if not check global variables
-                // if its not there then report
-                // that the variable is not declared int this scope
-                
-                int index = function->GetIndexOfLocal(n->assignment.name);
-                Add(OP_STORE);
-                Add(*(uint32_t*)&index);
-            } break;
-			case NODE_IF: {
-			
+      	case NODE_ASSIGNMENT: {
+			if(function) {
+				GenerateExpr(context, function, n->assignment.expr);
+					
+				if(function->Declared(n->assignment.name)) {
+					int index = function->GetIndexOfLocal(n->assignment.name);
+					if(index == -1) assert(!"Not good");
+					Add(OP_STORE);
+					Add(*(uint32_t*)&index);
+				} else if (context->GlobalDeclared(n->assignment.name)) {
+					int index = context->GetIndexOfGlobal(n->assignment.name);
+					if(index == -1) assert(!"Not good");
+					Add(OP_GSTORE);
+					Add(*(uint32_t*)&index);
+				} else {
+					assert(!"Not local or global");
+				}
+			} else {
+            	GenerateExpr(context, NULL, n->assignment.expr);
+            
+            	int index = context->GetIndexOfGlobal(n->assignment.name);
+            	Add(OP_GSTORE);
+            	Add(index);
+			}
+    	} break;
+		case NODE_IF: {
+			if(function) {
 				GenerateExpr(context, function, n->ifstmt.condition);
 
 				Add(OP_BRF);
-				uint32_t jump_address = Add(0); // FIXME: I should be the addresss of the first instruction after the if{} clause
-			
-				if(n->ifstmt.stmts != NULL)Generate(context, n->ifstmt.stmts);
+				uint32_t jump_address = Add(0); // FIXME: I should be the addresss of the first instruction after the if{}clause
+				
+				Node *nn = n->ifstmt.stmts;
+				while(nn != NULL) {
+					GenerateStmt(context, function, nn);
+					nn = nn->next;
+				}
 				uint32_t end_address = Add(0);
-				code_size--; // Removes this /\ opcode, as its only added for its address
+				code_size--;
 				code[jump_address] = end_address;
-			} break;
+			} else {
+				GenerateExpr(context, NULL, n->ifstmt.condition);
+				Add(OP_BRF);
+				uint32_t jump_address = Add(0); // FIXME: Comment above
+				Node *nn = n->ifstmt.stmts;
+				while(nn != NULL){
+					GenerateStmt(context, NULL, nn);
+					nn = nn->next;
+				}
+				uint32_t end_address = Add(0);
+				code_size--;
+				code[jump_address]= end_address;
+			}
+		} break;    
+       	case NODE_FUNCCALL: { 
+         	if(!context->FunctionExists(n->funccall.name)) {
+       	        assert(!"Functions does not exist!");
+   	        }
+         	Function *func = context->GetFunction(n->funccall.name);
+                
+			// TODO: Check if argument count and types are correct
+                
+       		for(int i = 0; i < n->funccall.num_arguments; i++) {
+       	      GenerateExpr(context, function, n->funccall.arguments[i]);
+    	 	}
+                
+          	Add(OP_CALL);
+          	Add(func->code_offset);
+         	Add(n->funccall.num_arguments);
+          	Add(OP_POP); // Since the value is not assigned anywhere
+      	} break;
             
-            case NODE_FUNCCALL: {
-                
-                if(!context->FunctionExists(n->funccall.name)) {
-                    assert(!"Functions does not exist!");
-                }
-                Function *func = context->GetFunction(n->funccall.name);
-                
-                // TODO: Check if argument count and types are correct
-                
-                for(int i = 0; i < n->funccall.num_arguments; i++) {
-                    GenerateExpr(context, function, n->funccall.arguments[i]);
-                }
-                
-                Add(OP_CALL);
-                Add(func->code_offset);
-                Add(n->funccall.num_arguments);
-                Add(OP_POP); // Since the value is not assigned anywhere
-            } break;
-            
-            default: {
-                printf("node type: %d\n", n->type);
-                assert(!"GenFunc default switch");
-            } break;
-        }
-        
+      	default: {
+         	printf("node type: %d\n", n->type);
+          	assert(!"GenFunc default switch");
+      	} break;
+	}
+}
+
+void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
+    Node *n = function->node->funcdef.stmts;
+    while(n != NULL) {
+    	// TODO: Replace all this with a call to
+		// GenerateStmt(context, function, n)
+      	GenerateStmt(context, function, n);
         n = n->next;
     }
     
 }
 
+/*
 void BytecodeBuilder::Generate(Context *context, Node *n) {
-    switch(n->type) {
-        
-        case NODE_RETURN: {
-            GenerateExpr(context, NULL, n->ret.expr);
-            // When in global scope we halt the program
-            // instead of a op_ret
-            Add(OP_HALT);
-            return;
-        } break;
-            
-        case NODE_ASSIGNMENT: {
-            // This may be a argument
-            GenerateExpr(context, NULL, n->assignment.expr);
-            
-            int index = context->GetIndexOfGlobal(n->assignment.name);
-            Add(OP_GSTORE);
-            Add(index);
-            return;
-        } break;
-
-		case NODE_IF: {
-			
-			GenerateExpr(context, NULL, n->ifstmt.condition);
-
-			Add(OP_BRF);
-			uint32_t jump_address = Add(0); // FIXME: I should be the addresss of the first instruction after the if{} clause
-			
-			if(n->ifstmt.stmts != NULL)Generate(context, n->ifstmt.stmts);
-			uint32_t end_address = Add(0);
-			code_size--; // Removes this /\ opcode, as its only added for its address
-			code[jump_address] = end_address;
-
-		} break;
-        
-        case NODE_FUNCCALL: {
-            
-            if(!context->FunctionExists(n->funccall.name)) {
-                assert(!"Functions does not exist!");
-            }
-            Function *func = context->GetFunction(n->funccall.name);
-                
-            // TODO: Check if argument count and types are correct
-            
-            for(int i = 0; i < n->funccall.num_arguments; i++) {
-                GenerateExpr(context, NULL, n->funccall.arguments[i]);
-            }
-                
-            Add(OP_CALL);
-            Add(func->code_offset);
-            Add(n->funccall.num_arguments);
-            Add(OP_POP); // Since the value is not assigned anywhere
-            return;
-        } break;
-        
-        default: {
-            printf("bcbuilder: type %d\n", n->type);
-			assert(!"BytecodeBuilder::Generate(Context*, Node*): Wops?");
-        } break;
-    }
+    GenerateStmt(context, NULL, n);
 }
+*/
 
 void BytecodeBuilder::Generate(Context *context) {
     
@@ -691,7 +678,7 @@ void BytecodeBuilder::Generate(Context *context) {
     int stmts = 0;
     while(n != NULL) {
         printf("stmts: %d\n", ++stmts);
-        Generate(context, n);
+        GenerateStmt(context, NULL, n);
         n = n->next;
     }
     
