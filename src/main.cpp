@@ -12,7 +12,14 @@ void print_indents(int length) {
 }
 
 void print_node(Node *n) {
-    static int indent_size = 0;
+	static int indent_size = 0;
+	
+	if(n == NULL) {
+		print_indents(indent_size);
+		printf("(null)\n");
+		return;
+	}
+
     switch(n->type) {
         case NODE_RETURN: {
             print_indents(indent_size);
@@ -70,7 +77,19 @@ void print_node(Node *n) {
             print_node(n->binop.rhs);
             indent_size--;
         } break;
-        
+       
+		case NODE_IF: {
+			print_indents(indent_size);
+			printf("if expr:\n");
+			indent_size++;
+			print_node(n->ifstmt.condition);
+			indent_size--;
+			printf("stmts:\n");
+			indent_size++;
+			print_node(n->ifstmt.stmts);
+			indent_size--;
+		} break;
+
         case NODE_VARIABLE: {
             print_indents(indent_size);
             printf("Variable: %s\n", n->variable.name);

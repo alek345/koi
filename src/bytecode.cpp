@@ -357,10 +357,11 @@ BytecodeBuilder::BytecodeBuilder() {
     code_size = 0;
 }
 
-void BytecodeBuilder::Add(uint32_t val) {
+uint32_t BytecodeBuilder::Add(uint32_t val) {
     code_size++;
     code = (uint32_t*) realloc(code, sizeof(uint32_t)*code_size);
     code[code_size-1] = val;
+	return code_size-1;
 }
 
 void WriteU32(FILE *f, uint32_t value) {
@@ -595,6 +596,20 @@ void BytecodeBuilder::Generate(Context *context, Node *n) {
             Add(index);
             return;
         } break;
+
+		case NODE_IF: {
+			
+			GenerateExpr(context, NULL, n->ifstmt.condition);
+
+			Add(OP_BRF);
+			uint32_t jump_address = Add(0); // FIXME: I should be the addresss of the first instruction after the if{} clause
+			
+			if(n->ifstmt.stmts != NULL)Generate(context, n->ifstmt.stmts);
+			uint32_t end_address = Add(0);
+			code_size--; // Removes this /\ opcode, as its only added for its address
+			code[jump_address] = end_address;
+
+		} break;
         
         case NODE_FUNCCALL: {
             

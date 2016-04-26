@@ -303,6 +303,10 @@ Node* Parser::Expr(TokenList *tokens) {
                 n->binop.rhs = nodes.Pop();
                 nodes.Push(n);
             } break;
+
+			default: {
+				assert(!"NOOOOPEEEE!");
+			}
         }
     }
     
@@ -666,7 +670,87 @@ Node* Parser::Ident() {
 }
 
 Node* Parser::If() {
-    // This should handle if, elif, and else
+	Token *next = lexer->Next();
+
+	if(next->type == TOKEN_LEFTBRACKET) {
+		Error(next, "Expected expressopn before '{'\n");
+	}
+
+	TokenList *list = new TokenList();
+	while(next->type != TOKEN_LEFTBRACKET) {
+		list->Add(next);
+		next = lexer->Next();
+	}
+	lexer->Next();
+
+	Node *expr = Expr(list);
+	assert(expr); // Expression failed to parser
+	delete list;
+
+	Node *stmts = Stmt();
+
+	if(stmts == NULL) {
+		// TODO: Expect the correct tokens such as } and endif or else
+		next = lexer->Next();
+		if(next->type != TOKEN_RIGHTBRACKET){
+			Error(next, "Expected '}' after if statement, got '%s'!", token_type_to_string(next->type));
+		}
+
+		next = lexer->Next();
+		if(next->type == TOKEN_ENDIF) {
+			
+		} else if(next->type == TOKEN_ELSE) {
+
+		}  else {
+			Error(next, "Expected 'else' or 'endif'\n");
+		}
+
+		// No statements to execute
+		Node *ifn = new Node();
+		ifn->type = NODE_IF;
+		ifn->ifstmt.condition = expr;
+		ifn->ifstmt.stmts = NULL;
+
+		ifn->ifstmt.elsestmt = NULL; // FIXME:
+		return ifn;
+	}
+
+    Node *stmt = stmts;
+    while(stmt != NULL) {
+        Node *newstmt = Stmt();
+        if(newstmt == NULL) break;
+        
+        stmt->next = newstmt;
+        newstmt->prev = stmt;
+        stmt = newstmt;
+    }
+
+	next = lexer->Current();
+	if(next->type != TOKEN_RIGHTBRACKET) {
+		Error(next, "Expected '}' after if statement, got '%s'!", token_type_to_string(next->type));
+	}
+	
+	next = lexer->Next();
+	if(next->type == TOKEN_ENDIF) {
+		lexer->Next();
+
+		Node *ifn = new Node();
+		ifn->type = NODE_IF;
+		ifn->ifstmt.condition = expr;
+		ifn->ifstmt.stmts = stmts;
+		ifn->ifstmt.elsestmt = NULL; // FIXME
+		return ifn;
+	} else if (next->type == TOKEN_ELSE) {	
+		// TODO: Complete check for another Stmt();
+		Node *ifn = new Node();
+		ifn->type = NODE_IF;
+		ifn->ifstmt.condition = expr;
+		ifn->ifstmt.stmts = stmts;
+		ifn->ifstmt.elsestmt = NULL; // FIXME
+		return ifn;
+	} else {
+		Error(next, "Expected 'else' or 'endif'!");
+	}
 
 	return NULL;
 }
