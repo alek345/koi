@@ -437,6 +437,7 @@ void BytecodeBuilder::GenerateExpr(Context *context, Function *function, Node *a
 					// We are in a function scope
 					if(function->Declared(n->variable.name)) {
 						int offset = function->GetIndexOfLocal(n->variable.name);
+						if(offset == -1) assert(!"Not declared");
 
 						Add(OP_LOAD);
 						conversion c;
@@ -446,6 +447,7 @@ void BytecodeBuilder::GenerateExpr(Context *context, Function *function, Node *a
 						// Function is not local, maybe global?
 						if(context->GlobalDeclared(n->variable.name)) {
 							int offset = context->GetIndexOfGlobal(n->variable.name);
+							if(offset == -1) assert(!"Not decalred");
 							Add(OP_GLOAD);
 							conversion c;
 							c.sintVal = offset;
@@ -459,6 +461,7 @@ void BytecodeBuilder::GenerateExpr(Context *context, Function *function, Node *a
 					
 					if(context->GlobalDeclared(n->variable.name)) {
 						int offset = context->GetIndexOfGlobal(n->variable.name);
+						if(offset == -1) assert(!"Nope!");
 						Add(OP_GLOAD);
 						conversion c;
 						c.sintVal = offset;
@@ -545,6 +548,18 @@ void BytecodeBuilder::GenerateFunction(Context *context, Function *function) {
                 Add(OP_STORE);
                 Add(*(uint32_t*)&index);
             } break;
+			case NODE_IF: {
+			
+				GenerateExpr(context, function, n->ifstmt.condition);
+
+				Add(OP_BRF);
+				uint32_t jump_address = Add(0); // FIXME: I should be the addresss of the first instruction after the if{} clause
+			
+				if(n->ifstmt.stmts != NULL)Generate(context, n->ifstmt.stmts);
+				uint32_t end_address = Add(0);
+				code_size--; // Removes this /\ opcode, as its only added for its address
+				code[jump_address] = end_address;
+			} break;
             
             case NODE_FUNCCALL: {
                 

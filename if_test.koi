@@ -1,7 +1,15 @@
 var a: int = 1;
 
-if a { 
-	return a+1;
-} endif
+func setup|num: int| {
+	if num {
+		a = 256;
+		return a;
+	} endif
 
-return a-1;
+	a = 1337;
+	return a;
+}
+
+setup|1|;
+
+return a;

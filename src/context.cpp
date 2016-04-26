@@ -41,9 +41,9 @@ int Function::GetIndexOfLocal(char *name) {
         }
     }
     
-    // TODO: Figure out what a invalid return value should be
-	assert(false);
+	return -1;
 }
+
 
 int Context::GetIndexOfGlobal(char *name) {
     for(int i = 0; i < num_globals; i++) {
@@ -54,8 +54,7 @@ int Context::GetIndexOfGlobal(char *name) {
         }
     }
     
-    // TODO: Figure out what a invalid return value should be
-	assert(false);
+    return -1;
 }
 
 bool Context::GlobalDeclared(char *name) {
