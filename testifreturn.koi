@@ -1,0 +1,10 @@
+func test|a:int| {
+	if a {
+		a = 12;
+		return a;
+	} endif
+
+	return 2;
+}
+
+test|1|;
