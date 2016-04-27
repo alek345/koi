@@ -108,7 +108,11 @@ Node* FindFunctions(Context *context, Node *nodes) {
             nfuncs++;
             functions = (Node**) realloc(functions, sizeof(Node*)*nfuncs);
             functions[nfuncs-1] = n;
-        }else if(first_not_removed == NULL) {
+        } else if(n->type == NODE_CFUNCDEF) {	 
+            nfuncs++;
+            functions = (Node**) realloc(functions, sizeof(Node*)*nfuncs);
+            functions[nfuncs-1] = n;
+		} else if(first_not_removed == NULL) {
             first_not_removed = n;
         }
         
@@ -123,10 +127,15 @@ Node* FindFunctions(Context *context, Node *nodes) {
         context->num_functions++;
         context->functions = (Function**) realloc(context->functions, sizeof(Function*)*context->num_functions);
         context->functions[context->num_functions-1] = function; 
-        
-        function->local_variables = NULL;
+   
+		function->local_variables = NULL;
         function->num_locals = 0;
-        
+
+		if(function->node->type == NODE_CFUNCDEF) {
+			function->is_cfunc = true;
+			continue;
+		}
+
         Node *stmts_first_not_removed = NULL;
         n = function->node->funcdef.stmts;
         while(n != NULL) {

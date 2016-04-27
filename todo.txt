@@ -1,0 +1,16 @@
+TODO:
+
+CURRENTLY:
+ - Add support for cfunc declerations
+
+MEDIUM PRIORITY (aka featurelist?):
+ - Struct support
+ - Proper string support. Things to figure out
+ 	- How to store strings?
+	- Are strings like *char or are they invisible objects 
+      accessed like arrays
+ - Array support
+ 	- Accessed with []
+
+LOWESR PRIORITY:
+ - Add assembly generation

@@ -37,6 +37,7 @@ struct Parser {
     Node* Ident();
     Node* If();
     Node* Return();
+	Node* CFunc();
     Node* Stmt();
     Node* GlobalStmt();
 };

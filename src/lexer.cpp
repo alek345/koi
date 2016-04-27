@@ -44,6 +44,7 @@ const char *token_type_to_string(TokenType type) {
 		TOKEN(TOKEN_LEFTBRACKET);
 		TOKEN(TOKEN_RIGHTBRACKET);
 		TOKEN(TOKEN_ENDIF);
+		TOKEN(TOKEN_CFUNC);
 #undef TOKEN
     }
 }
@@ -365,6 +366,7 @@ void Lexer::Lex() {
             KEYWORD("var", TOKEN_VAR);
             KEYWORD("return", TOKEN_RETURN);
 			KEYWORD("struct", TOKEN_STRUCT);
+			KEYWORD("cfunc", TOKEN_CFUNC);
 #undef KEYWORD
         }
     }

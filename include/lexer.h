@@ -29,6 +29,7 @@ enum TokenType {
 	TOKEN_PIPE,
 	TOKEN_LEFTBRACKET,
 	TOKEN_RIGHTBRACKET,
+	TOKEN_CFUNC,
 
 	// Used by expression parser
 	TOKEN_FUNCCALL,

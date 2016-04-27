@@ -13,10 +13,12 @@ struct Variable {
 // global variable or argument. Probably make a simple
 // GetVariable(char *name) that figures this out
 struct Function {
+	bool is_cfunc;
+
     Node *node;
     Variable **local_variables;
     int num_locals;
-    
+
     // Used by the BytecodeBuilder
     uint32_t code_offset;
     

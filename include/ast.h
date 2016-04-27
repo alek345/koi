@@ -13,6 +13,7 @@ enum NodeType {
     NODE_UNARY,
     NODE_FUNCDEF,
     NODE_IF,
+	NODE_CFUNCDEF,
     // TODO: NODE_STRUCTDEF,
 };
 
@@ -61,6 +62,12 @@ struct Node {
     Node *next;
     
     union {
+		struct {
+            char *name;
+            int num_arguments;
+            char **arguments;
+            char **argument_types;
+		} cfuncdef;
         struct {
             LiteralType type;
             union { int intVal; float floatVal; char *strVal; };

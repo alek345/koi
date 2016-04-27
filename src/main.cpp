@@ -21,7 +21,17 @@ void print_node(Node *n) {
 	}
 
     switch(n->type) {
-        case NODE_RETURN: {
+		case NODE_CFUNCDEF: {	
+			print_indents(indent_size);
+            printf("CFuncdef: %s\n", n->cfuncdef.name);
+			print_indents(indent_size);
+			printf("Arguments (%d):\n", n->cfuncdef.num_arguments);
+            for(int i = 0; i < n->cfuncdef.num_arguments; i++) {
+                printf("Arg %d: %s\n", i+1, n->cfuncdef.arguments[i]);
+            }
+		} break;
+
+		case NODE_RETURN: {
             print_indents(indent_size);
             printf("Return\n");
 			print_indents(indent_size);

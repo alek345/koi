@@ -33,6 +33,7 @@ enum Operand {
     OP_STORE,
     OP_GSTORE,
 	OP_GLOAD,
+	OP_CFUNC,
 };
 
 // I don't know if this behavior is specified

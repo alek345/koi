@@ -781,6 +781,79 @@ Node* Parser::Return() {
     return n;
 }
 
+// cfunc add|a: int, b: int|;
+Node* Parser::CFunc() {
+	Token *next = lexer->Next();
+
+	if(next->type != TOKEN_IDENT) {
+		Error(next, "Expected function name after 'cfunc'!");
+	}
+	Token *name = next;
+	next = lexer->Next();
+
+	if(next->type != TOKEN_PIPE) {
+		Error(next, "Expected '|' after function name!");
+	}
+	next = lexer->Next();
+
+    int num_arguments = 0;
+    char **arguments = NULL;
+    char **argument_types = NULL;
+
+    while(next->type != TOKEN_PIPE) {
+        
+        if(next->type == TOKEN_IDENT) {
+            
+			num_arguments++;
+			arguments = (char**)realloc(arguments, sizeof(char*)*num_arguments);
+			arguments[num_arguments - 1] = next->strVal;
+            
+			next = lexer->Next();
+			if (next->type != TOKEN_COLON) {
+				Error(next, "Expected ':' after argument name!");
+			}
+
+			next = lexer->Next();
+            if(next->type != TOKEN_IDENT) {
+                Error(next, "Expected argument type after ':'!");
+            }
+
+			argument_types = (char**)realloc(argument_types, sizeof(char*)*num_arguments);
+			argument_types[num_arguments - 1] = next->strVal;
+            
+            next = lexer->Next();
+            if(next->type == TOKEN_PIPE) {
+                break;
+            } else if(next->type == TOKEN_COMMA) {
+                next = lexer->Next();
+                continue;
+            } else {
+                Error(next, "Expected ',' or '|'");
+            }
+            
+            
+        } else {
+            Error(next, "Expected identifier, got '%s'!", token_type_to_string(next->type));
+        }
+        
+    }
+
+	next = lexer->Next();
+	if(next->type != TOKEN_SEMICOLON) {
+		Error(next, "Expected ';' after cfunc decleration!");
+	}
+	lexer->Next();
+
+	Node *cfunc = new Node();
+	cfunc->type = NODE_CFUNCDEF;
+	cfunc->cfuncdef.name = name->strVal;
+	cfunc->cfuncdef.num_arguments = num_arguments;
+	cfunc->cfuncdef.arguments = arguments;
+	cfunc->cfuncdef.argument_types = argument_types;
+
+	return cfunc;
+}
+
 Node* Parser::Stmt() {
     switch(lexer->Current()->type) {
         case TOKEN_VAR: {
@@ -806,6 +879,9 @@ Node* Parser::GlobalStmt() {
             return FunctionDef();
         } break;
         // Implement structdef here maybe?
+		case TOKEN_CFUNC: {
+			return CFunc();
+		} break;
     }
     
     return Stmt();

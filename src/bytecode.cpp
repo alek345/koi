@@ -2,6 +2,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+
+#ifdef __linux__
+#include <dlfcn.h>
+#elif __WIN32
+#include <windows.h>
+#endif
+
+typedef void(*cfuncdef)(uint32_t*,uint32_t*);
+
+// Test function
+void print_int(uint32_t *stack, uint32_t *ip) {
+	uint32_t a = stack[*ip--];
+	printf("%d\n", a);
+}
 
 typedef void(*vmFunc)(VirtualMachine*);
 
@@ -214,6 +229,41 @@ void gload(VirtualMachine *vm) {
 	vm->stack[++vm->sp] = vm->data[val];
 }
 
+void cfunc(VirtualMachine *vm) {
+	// Read unitil \0 is found, this is the function name
+	char *funcname = NULL;
+	int name_len = 0;
+
+	while(vm->code[vm->ip]) {
+		name_len++;
+		funcname = (char*) realloc(funcname, sizeof(char)*name_len);
+		funcname[name_len-1] = vm->code[vm->ip++];
+	}
+
+	name_len++;
+	funcname = (char*) realloc(funcname, sizeof(char)*name_len);
+	funcname[name_len-1] = 0;
+	vm->ip++;
+
+	uint32_t num_args = vm->code[vm->ip++];
+#ifdef __linux__
+	void *handle = dlopen("koistd/libkoistd.so", RTLD_LAZY);
+	if(!handle) {
+		printf("Failed to open this file as handle!\n");
+	}
+	cfuncdef function = (cfuncdef) dlsym(handle, funcname);
+	if(!function) {
+		printf("Cfunc points to NULL\nname: %s\n", funcname);
+		printf("dlerror(): %s\n", dlerror());
+	}
+	function(vm->stack, (uint32_t*)&vm->sp);
+#elif _WIN32
+#error "not yet implemented!"
+#else
+#warning "We dont support cfunc on this platoform... Yet?"
+#endif
+}
+
 const char *op_to_string(Operand op) {
     switch(op) {
 #define OP(op) case op: { return #op ;}
@@ -245,6 +295,7 @@ const char *op_to_string(Operand op) {
         OP(OP_STORE);
         OP(OP_GSTORE);
 		OP(OP_GLOAD);
+		OP(OP_CFUNC);
 #undef OP
     }
     
@@ -321,6 +372,8 @@ static vmFunc ops[] = {
     
     gstore,
 	gload,
+
+	cfunc,
 };
 
 int32_t VirtualMachine::Run(bool trace) {
@@ -521,7 +574,12 @@ void BytecodeBuilder::GenerateStmt(
 ) {
 	Node *n = stmt;
 	switch(n->type) {
-		 case NODE_RETURN: {	
+		case NODE_CFUNCDEF: {
+			if(function) {
+				assert(!"No cfuncdefs in functions");
+			}
+		} break;
+		case NODE_RETURN: {	
 			if(function) {
 				GenerateExpr(context, function, n->ret.expr);
 
@@ -603,17 +661,28 @@ void BytecodeBuilder::GenerateStmt(
        	        assert(!"Functions does not exist!");
    	        }
          	Function *func = context->GetFunction(n->funccall.name);
-                
+
 			// TODO: Check if argument count and types are correct
                 
        		for(int i = 0; i < n->funccall.num_arguments; i++) {
        	      GenerateExpr(context, function, n->funccall.arguments[i]);
     	 	}
-                
-          	Add(OP_CALL);
-          	Add(func->code_offset);
-         	Add(n->funccall.num_arguments);
-          	Add(OP_POP); // Since the value is not assigned anywhere
+
+			if(func->is_cfunc) {
+				Add(OP_CFUNC);
+				char *name = n->cfuncdef.name;
+				while(*name) {
+					Add(*name);
+					name++;
+				}
+				Add(0);
+				Add(n->cfuncdef.num_arguments);
+			} else {
+				Add(OP_CALL);
+				Add(func->code_offset);
+				Add(n->funccall.num_arguments);
+				Add(OP_POP); // Since the value is not assigned anywhere
+			}
       	} break;
             
       	default: {
@@ -647,7 +716,9 @@ void BytecodeBuilder::Generate(Context *context) {
     for(int i = 0; i < context->num_functions; i++) {
         Function *func = context->functions[i];
         func->code_offset = this->code_size;
-
+		if(func->is_cfunc) {
+			continue;
+		}
 		for (int i = 0; i < func->num_locals; i++) {
 			Add(OP_CONST);
 			Add(0);
