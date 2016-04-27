@@ -1,10 +1,14 @@
 # External function that prints the integer
 cfunc print_int|i: int|;
 cfunc println||;
+cfunc print_hex|i: int|;
 
 var a: int = 16;
+println||;
 print_int|a*a|;
 println||;
+print_hex|a*a*a|;
+println||;println||;
 
 # Bytecode:
 # OP_CFUNCALL <zero terminated string of the function name> <number of arguments passed to the stack> <address of stack> <stack pointer>

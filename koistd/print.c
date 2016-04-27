@@ -2,11 +2,16 @@
 #include <stdint.h>
 #include "macros.h"
 
-void print_int(uint32_t *stack, uint32_t *sp) {
+FUNCTION(print_int) {
 	uint32_t val = pop();
 	printf("%d", val);
 }
 
-void println(uint32_t *stack, uint32_t *sp) {
+FUNCTION(print_hex) {
+	uint32_t val = pop();
+	printf("0x%04X", val);
+}
+
+FUNCTION(println) {
 	printf("\n");
 }

@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
     printf("Code size: %d\n", builder.code_size);
     
     VirtualMachine vm(&builder);
-    int32_t ret_code = vm.Run(true);
+    int32_t ret_code = vm.Run(false);
     printf("return code: %d/%f\n",
         ret_code, *((float*)&ret_code)
     );
@@ -208,10 +208,9 @@ int main(int argc, char **argv) {
 	printf("\nGlobals:\n");
 	vm.PrintData();
 
-	CBuilder cbuilder(&builder);
-	cbuilder.Write("output.c");
-
-	system("gcc -g output.c -o cbuild");
+//	CBuilder cbuilder(&builder);
+//	cbuilder.Write("output.c");
+//	system("gcc -g output.c -o cbuild");
 
     return 0;
 }
