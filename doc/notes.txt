@@ -1,0 +1,5 @@
+Add a thing to load dynamic libraries for cfunc.
+Maybe like this:
+	clib "somewrapperlib";
+
+

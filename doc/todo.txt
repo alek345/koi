@@ -1,7 +1,7 @@
 TODO:
 
 CURRENTLY:
- - Add support for cfunc declerations
+ - Add support for library loading and support for cfunc in CBuilder.cpp
 
 MEDIUM PRIORITY (aka featurelist?):
  - Struct support
