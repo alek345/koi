@@ -1,0 +1,17 @@
+cfunc print_char|c: int|;
+cfunc println||;
+
+var a: int = 65;
+func print_az|| {
+	print_char|a|;
+	a = a + 1;
+
+	if(a - 91) {
+		print_az||;
+		return a;
+	} endif
+	println||;
+	return a;
+}
+
+print_az||;

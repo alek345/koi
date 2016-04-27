@@ -154,6 +154,24 @@ void fancy_print_code(uint32_t *code, uint32_t code_size) {
 				i++;
 				printf("%d\n", code[i++]);
 				break;
+			case OP_CFUNC:
+				printf("CFUNC: ");
+				i++;
+				char *name = NULL;
+				int len = 0;
+				while(code[i]) {
+					len++;
+					name = (char*) realloc(name, sizeof(char)*len);
+					name[len-1] = code[i++];
+				}
+				len++;
+				name = (char*) realloc(name, sizeof(char)*len);
+				name[len-1] = 0;
+				i++;
+				printf("%s, nargs: %d\n", name, code[i++]);
+				free(name);
+
+				break;
 		}
 
 	}

@@ -12,6 +12,11 @@ FUNCTION(print_hex) {
 	printf("0x%04X", val);
 }
 
+FUNCTION(print_char) {
+	uint32_t val = pop();
+	printf("%c", val);
+}
+
 FUNCTION(println) {
 	printf("\n");
 }
