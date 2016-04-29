@@ -1,0 +1,23 @@
+cfunc sdl_Init||;
+cfunc sdl_CreateWindow|w: int, h: int|;
+cfunc sdl_SetColor|r: int, g: int, b: int|;
+cfunc sdl_Clear||;
+cfunc sdl_Present||;
+cfunc sdl_HandleUpdates||;
+cfunc sdl_Delay|ms: int|;
+
+func loop|| {
+	
+	sdl_HandleUpdates||;
+	sdl_Clear||;
+	sdl_Present||;
+
+	sdl_Delay|100|;
+
+	loop||;
+}
+
+sdl_Init||;
+sdl_CreateWindow|800, 600|;
+sdl_SetColor|255, 0, 255|;
+loop||;

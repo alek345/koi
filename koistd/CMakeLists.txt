@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(
 	koistd SHARED
 	print.c
+	sdl.c
 )
+
+target_link_libraries(koistd SDL2)
 
 install(TARGETS koistd DESTINATION lib)

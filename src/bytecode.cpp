@@ -251,6 +251,7 @@ void cfunc(VirtualMachine *vm) {
 	if(!handle) {
 		printf("Failed to open this file as handle!\n");
 	}
+	//printf("funcname: %s\n", funcname);
 	cfuncdef function = (cfuncdef) dlsym(handle, funcname);
 	if(!function) {
 		printf("Cfunc points to NULL\nname: %s\n", funcname);

@@ -43,7 +43,7 @@ union conversion {
     int32_t sintVal;
 };
 
-#define STACK_SIZE 4096
+#define STACK_SIZE 1048576
 
 const char *op_to_string(Operand op);
 
