@@ -259,7 +259,7 @@ void cfunc(VirtualMachine *vm) {
 	}
 	function(vm->stack, (uint32_t*)&vm->sp);
 #elif _WIN32
-#error "not yet implemented!"
+#warning "WIN32: CFUNC in virtual machine is not supported yet!"
 #else
 #warning "We dont support cfunc on this platoform... Yet?"
 #endif
