@@ -1,3 +1,19 @@
+Addings strings.
+
+Should strings be stored in a specific memory location
+or pushed onto the stack?
+
+If stored in code memory:
+
+OP_SCONST Hello, world\0
+
+
+How to store string variables?
+
+currently everything is stored as a 4-byte value.
+maybe use char pointers as the 4-byte value.
+
+
 Add a thing to load dynamic libraries for cfunc.
 Maybe like this:
 	clib "somewrapperlib";

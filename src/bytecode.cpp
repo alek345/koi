@@ -6,7 +6,7 @@
 
 #ifdef __linux__
 #include <dlfcn.h>
-#elif __WIN32
+#elif _WIN32
 #include <windows.h>
 #endif
 
