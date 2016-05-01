@@ -13,6 +13,7 @@ enum NodeType {
     NODE_UNARY,
     NODE_FUNCDEF,
     NODE_IF,
+    NODE_WHILE,
 	NODE_CFUNCDEF,
     // TODO: NODE_STRUCTDEF,
 };
@@ -62,6 +63,10 @@ struct Node {
     Node *next;
     
     union {
+		struct {
+			Node *condition;
+			Node *nodes;
+		} whilestmt;
 		struct {
             char *name;
             int num_arguments;

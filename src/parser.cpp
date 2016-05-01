@@ -854,6 +854,11 @@ Node* Parser::CFunc() {
 	return cfunc;
 }
 
+Node* Parser::While() {	
+	Token *next = lexer->Next();
+			
+}
+
 Node* Parser::Stmt() {
     switch(lexer->Current()->type) {
         case TOKEN_VAR: {
@@ -865,6 +870,9 @@ Node* Parser::Stmt() {
         case TOKEN_IF: {
             return If();
         } break;
+	case TOKEN_WHILE: {
+	    return While();
+	} break;
         case TOKEN_RETURN: {
             return Return();
         } break;

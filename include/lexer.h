@@ -30,6 +30,7 @@ enum TokenType {
 	TOKEN_LEFTBRACKET,
 	TOKEN_RIGHTBRACKET,
 	TOKEN_CFUNC,
+	TOKEN_WHILE,
 
 	// Used by expression parser
 	TOKEN_FUNCCALL,

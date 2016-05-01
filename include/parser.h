@@ -38,6 +38,7 @@ struct Parser {
     Node* If();
     Node* Return();
 	Node* CFunc();
+	Node* While();
     Node* Stmt();
     Node* GlobalStmt();
 };
